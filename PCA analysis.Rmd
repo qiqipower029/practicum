@@ -1,0 +1,11 @@
+---
+title: "PCA analysis"
+author: "Jieqi Tu, jt3098"
+date: "11/16/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
