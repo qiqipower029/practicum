@@ -9,16 +9,46 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(sqldf)
-library(pcr)
 ```
 
 ```{r Import data}
 # Import datasets
-ABC_BA = readxl::read_excel("./ABC_Cord Blood_Metabolomics_BA data_14Nov2019.xlsx")
-ABC_CL = readxl::read_excel("./ABC_Cord Blood_Metabolomics_CL data_14Nov2019.xlsx")
-ABC_PM = readxl::read_excel("./ABC_Cord Blood_Metabolomics_PM data_14Nov2019.xlsx")
+ABC_total_raw = readxl::read_excel("./ABC_Cord Blood_Metabolomics_new.xlsx") %>% as.data.frame()
 
-# Join these three datasets and tidy the new dataset
-ABC_total = sqldf("")
+# Tidy dataset
+ABC_total = 
+  ABC_total_raw %>% 
+  janitor::clean_names()
+
+# Divide the dataset to confounding information and experimental data
+ABC_information = ABC_total[1:10]
+ABC_data = ABC_total[11:930]
+```
+
+
+
+```{r scale the data}
+# Base 10 log transformation of original data
+ABC_data = sapply(ABC_data, function(x) log10(x))
+ABC_logtrans = cbind.data.frame(ABC_information, ABC_data)
+  
+# Extract the subset of all controls
+subset_control = 
+  ABC_logtrans %>% 
+  group_by(strata) %>% 
+  filter(asd == 0)
+
+# Calculate the mean and standard deviation of the control group
+mean_control = sapply(subset_control[11:930], function(x) mean(x)) 
+sd_control = sapply(subset_control[11:930], function(x) sd(x))
+
+# Write a for-loop to conduct scaling of data for both control and ASD groups
+for(i in 11:930) {
+  ABC_logtrans[i] = (ABC_logtrans[i] - mean_control[i-10])/sd_control[i-10]
+}
+```
+
+```{r principal component analysis}
+# Plot the PC1 and PC2
 ```
 
