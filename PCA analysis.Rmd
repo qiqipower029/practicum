@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(sqldf)
+library(pcr)
 ```
 
 ```{r Import data}
@@ -17,6 +18,7 @@ ABC_BA = readxl::read_excel("./ABC_Cord Blood_Metabolomics_BA data_14Nov2019.xls
 ABC_CL = readxl::read_excel("./ABC_Cord Blood_Metabolomics_CL data_14Nov2019.xlsx")
 ABC_PM = readxl::read_excel("./ABC_Cord Blood_Metabolomics_PM data_14Nov2019.xlsx")
 
-# Join these three datasets
+# Join these three datasets and tidy the new dataset
+ABC_total = sqldf("")
 ```
 
