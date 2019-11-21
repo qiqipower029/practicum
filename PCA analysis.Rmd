@@ -22,23 +22,10 @@ ABC_total =
 # Divide the dataset to confounding information and experimental data
 ABC_information = ABC_total[1:10]
 ABC_data = ABC_total[11:930]
-
-# Make a copy of ABC_data
-ABC_data_orginal = ABC_data
 ```
 
 ```{r principal component analysis}
-# Principal component analysis
-ABC_pca = prcomp(ABC_total[c(11:930)], center = T, scale. = T)
-summary(ABC_pca)
-
-# Plot PC1 and PC2
-library(ggfortify)
-autoplot(ABC_pca, label = T, label.size = 3)
-```
-
-
-```{r scale the data}
+# Generate z-scores for each analyte
 # Extract the subset of all controls
 subset_control = 
   ABC_total %>% 
@@ -50,34 +37,47 @@ mean_control = sapply(subset_control[11:930], function(x) mean(x))
 sd_control = sapply(subset_control[11:930], function(x) sd(x))
 
 # Write a for-loop to calculate z-score of data for both control and ASD groups
-for(i in 11:930) {
-  ABC_logtrans[i] = (ABC_logtrans[i] - mean_control[i-10])/sd_control[i-10]
+for(i in 1:920) {
+  ABC_data[i] = (ABC_data[i] - mean_control[i])/sd_control[i]
 }
-```
-
-```{r principal component analysis}
 # Principal component analysis
-ABC_pca = prcomp(ABC_logtrans[c(11:930)], center = F, scale. = F)
+ABC_pca = prcomp(ABC_data[c(1:920)], center = T, scale. = T)
 summary(ABC_pca)
 
 # Plot PC1 and PC2
-plot(ABC_pca$x[,1],ABC_pca$x[,2], xlab="PC1 (9.6%)", ylab = "PC2 (8.7%)", main = "PC1 / PC2 - plot")
+library(ggfortify)
+autoplot(ABC_pca, label = T, label.size = 3)
 ```
 
-```{r log transformation}
-# Convert 0 to NA and add 1 to columns that contains 0
-ABC_data[ABC_data == 0] = NA
-NA_value = sapply(ABC_data[1:920], function(x) sum(which(is.na(x))))
+```{r delete outliers and fit another PCA}
+# Delete outliers 
+ABC_total = 
+  ABC_total[-c(55, 56, 121, 122, 195, 196), ]
 
+# Re-generate z-scores
+subset_control = 
+  ABC_total %>% 
+  group_by(strata) %>% 
+  filter(asd == 0)
+
+# Calculate the mean and standard deviation of the control group
+mean_control = sapply(subset_control[11:930], function(x) mean(x)) 
+sd_control = sapply(subset_control[11:930], function(x) sd(x))
+
+ABC_data_2 = ABC_total[11:930]
+# Write a for-loop to calculate z-score of data for both control and ASD groups
 for(i in 1:920) {
-  if(NA_value[i]>0) {
-    ABC_data_orginal[i] = ABC_data_orginal[i] + 1
-  }
+  ABC_data_2[i] = (ABC_data_2[i] - mean_control[i])/sd_control[i]
 }
 
+# PCA again
+ABC_pca_2 = prcomp(ABC_data_2[c(1:920)], center = T, scale. = T)
+summary(ABC_pca_2)
 
-# Base 10 log transformation of original data
-ABC_data = sapply(ABC_data_orginal[1:920], function(x) log10(x))
-ABC_logtrans = cbind.data.frame(ABC_information, ABC_data)
+# Plot PC1/PC2
+autoplot(ABC_pca_2, label = T, label.size = 3)
+
+# Plot PC2/PC3
+autoplot(ABC_pca_2, x=2, y=3, label = T, label.size = 3)
 ```
 
