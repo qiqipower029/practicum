@@ -51,6 +51,52 @@ for(i in 1:183) {
 
 ### PCA for CL data
 ```{r PCA for CL data}
+# Calculate z-scores
+mean_CL = mean_control = sapply(CL_data[1:481], function(x) mean(x)) 
+sd_CL = sapply(CL_data[1:481], function(x) sd(x))
+CL_data_z = CL_data
+for(i in 1:481) {
+  CL_data_z[i] = (CL_data[i] - mean_CL[i])/sd_CL[i]
+}
 
+CL_pca = prcomp(CL_data_z[c(1:481)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(CL_pca, label = T, label.size = 3)
+```
+
+### PCA for BA data
+```{r PCA for BA data}
+# Calculate z-scores
+mean_BA = mean_control = sapply(BA_data[1:256], function(x) mean(x)) 
+sd_BA = sapply(BA_data[1:256], function(x) sd(x))
+BA_data_z = BA_data
+for(i in 1:256) {
+  BA_data_z[i] = (BA_data[i] - mean_BA[i])/sd_BA[i]
+}
+
+BA_pca = prcomp(BA_data_z[c(1:256)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(BA_pca, label = T, label.size = 3)
+```
+
+### PCA for PM data
+```{r PCA for PM data}
+# Calculate z-scores
+mean_PM = mean_control = sapply(PM_data[1:183], function(x) mean(x)) 
+sd_PM = sapply(PM_data[1:183], function(x) sd(x))
+PM_data_z = PM_data
+for(i in 1:183) {
+  PM_data_z[i] = (PM_data[i] - mean_PM[i])/sd_PM[i]
+}
+
+PM_pca = prcomp(PM_data_z[c(1:183)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(PM_pca, label = T, label.size = 3)
 ```
 
