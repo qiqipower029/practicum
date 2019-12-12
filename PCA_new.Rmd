@@ -64,6 +64,10 @@ CL_pca = prcomp(CL_data_z[c(1:481)], center = F, scale. = F)
 # Plot PC1/PC2
 library(ggfortify)
 autoplot(CL_pca, label = T, label.size = 3)
+
+CL_new = CL_data_z[-c(55, 56, 121, 122, 195, 196),]
+CL_pca_2 = prcomp(CL_new[c(1:481)], center = F, scale. = F)
+autoplot(CL_pca_2, label = T, label.size = 3)
 ```
 
 ### PCA for BA data
@@ -81,6 +85,11 @@ BA_pca = prcomp(BA_data_z[c(1:256)], center = F, scale. = F)
 # Plot PC1/PC2
 library(ggfortify)
 autoplot(BA_pca, label = T, label.size = 3)
+
+BA_new = BA_data_z[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196),]
+BA_pca_new = prcomp(BA_new[c(1:256)], center = F, scale. = F)
+autoplot(BA_pca_new, label = T, label.size = 3)
+
 ```
 
 ### PCA for PM data
