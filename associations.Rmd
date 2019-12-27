@@ -11,6 +11,63 @@ library(tidyverse)
 
 ### Delete outliers
 ```{r import dataset}
-
+# Import dataset
+CL = readxl::read_excel("./ABC_Cord Blood_Metabolomics_CL data_14Nov2019.xlsx") %>% janitor::clean_names()
+BA = readxl::read_excel("./ABC_Cord Blood_Metabolomics_BA data_14Nov2019.xlsx") %>% janitor::clean_names()
+PM = readxl::read_excel("./ABC_Cord Blood_Metabolomics_PM data_14Nov2019.xlsx") %>% janitor::clean_names()
 ```
 
+```{r outliers}
+# Delete outliers that identified by PCA
+CL_new = CL[-c(55, 56, 121, 122, 195, 196),]
+BA_new = BA[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196),]
+PM_new = PM
+```
+### Scaling
+```{r scale data}
+# Calculate the standard deviation of the control group for each dataset
+BA_c = BA_new %>% 
+  group_by(strata) %>% 
+  filter(asd == 0)
+CL_c = CL_new %>% 
+  group_by(strata) %>% 
+  filter(asd == 0)
+PM_c = PM %>% 
+  group_by(strata) %>% 
+  filter(asd == 0)
+sd_BA = sapply(BA_c[11:266], function(x) sd(x))
+sd_CL = sapply(CL_c[11:491], function(x) sd(x))
+sd_PM = sapply(PM_c[11:193], function(x) sd(x))
+
+# Divide the standard deviation
+for(i in 1:256) {
+  BA_new[i+10] = BA_new[i+10]/sd_BA[i]
+}
+for(i in 1:481) {
+  CL_new[i+10] = CL_new[i+10]/sd_CL[i]
+}
+for(i in 1:183) {
+  PM_new[i+10] = PM[i+10]/sd_PM[i]
+}
+```
+
+### Log transformation
+```{r log transformation}
+# base 10 log transformation
+BA_log = BA_new
+CL_log = CL_new
+PM_log = PM_new
+for(i in 1:256) {
+  BA_log[i+10] = log10(BA_new[i+10])
+}
+
+for(i in 1:481) {
+  CL_log[i+10] = log10(CL_new[i+10])
+}
+
+for(i in 1:183) {
+  PM_log[i+10] = log10(PM_new[i+10])
+}
+```
+
+### Test for associations
