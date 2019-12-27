@@ -1,0 +1,16 @@
+---
+title: "associations"
+author: "Jieqi Tu (jt3098)"
+date: "12/27/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+### Delete outliers
+```{r import dataset}
+
+```
+
