@@ -68,11 +68,31 @@ for(i in 1:481) {
 for(i in 1:183) {
   PM_log[i+10] = log10(PM_new[i+10])
 }
+
 ```
 
-### Test for associations
+### Recode birth year
+```{r recode birth year}
+CL_log = 
+  CL_log %>% 
+  mutate(year_new = ifelse(birth_year <= 2000, "before 2000", birth_year))
+
+PM_log = 
+  PM_log %>% 
+  mutate(year_new = ifelse(birth_year <= 2000, "before 2000", birth_year))
+
+BA_log = 
+  BA_log %>% 
+  mutate(year_new = ifelse(birth_year <= 2000, "before 2000", birth_year))
+```
+
+### Test for associations using conditional logistic regression
 ```{r CL association}
 # CL data associations
-
+library(survival)
+clogit(asd~)
+for(i in 1:256) {
+  
+}
 ```
 
