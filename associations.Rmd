@@ -29,6 +29,9 @@ PM_data[PM_data == 0] = NA
 CL_min = sapply(CL_data[1:481], function(x) min(x, na.rm = T))
 BA_min = sapply(BA_data[1:256], function(x) min(x, na.rm = T))
 PM_min = sapply(PM_data[1:183], function(x) min(x, na.rm = T))
+CL_data = CL[11:491]
+BA_data = BA[11:266]
+PM_data = PM[11:193]
 # Convert 0 to half of the minimum value
 for(i in 1:481) {
   CL_data[i][CL_data[i]==0] = 0.5*CL_min[i]
@@ -84,7 +87,7 @@ for(i in 1:481) {
   CL_new[i+10] = CL_new[i+10]/sd_CL[i]
 }
 for(i in 1:183) {
-  PM_new[i+10] = PM[i+10]/sd_PM[i]
+  PM_new[i+10] = PM_new[i+10]/sd_PM[i]
 }
 ```
 
@@ -160,5 +163,25 @@ for(i in 1:256) {
 }
 BA_result = 
   store_BA %>% 
+  mutate(term = predictor_name)
+```
+
+```{r PM association}
+# PM data associations
+column_name = colnames(PM_log)
+predictor_name = column_name[11:193]
+
+store_PM = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(store_PM) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:183) {
+  data = PM_log[i+10]
+  a = unlist(data)
+  model = clogit(asd~birth_season + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = PM_log)
+  result = broom::tidy(model)
+  store_PM[i, ] = result[11,]
+}
+
+PM_result = 
+  store_PM %>% 
   mutate(term = predictor_name)
 ```
