@@ -9,7 +9,7 @@ output: pdf_document
 library(tidyverse)
 ```
 
-### Delete outliers
+### Import dataset
 ```{r import dataset}
 # Import dataset
 CL = readxl::read_excel("./ABC_Cord Blood_Metabolomics_CL data_14Nov2019.xlsx") %>% janitor::clean_names()
@@ -17,12 +17,49 @@ BA = readxl::read_excel("./ABC_Cord Blood_Metabolomics_BA data_14Nov2019.xlsx") 
 PM = readxl::read_excel("./ABC_Cord Blood_Metabolomics_PM data_14Nov2019.xlsx") %>% janitor::clean_names()
 ```
 
+
+### Convert 0 to half of the minimum values
+```{r}
+CL_data = CL[11:491]
+BA_data = BA[11:266]
+PM_data = PM[11:193]
+CL_data[CL_data == 0] = NA
+BA_data[BA_data == 0] = NA
+PM_data[PM_data == 0] = NA
+CL_min = sapply(CL_data[1:481], function(x) min(x, na.rm = T))
+BA_min = sapply(BA_data[1:256], function(x) min(x, na.rm = T))
+PM_min = sapply(PM_data[1:183], function(x) min(x, na.rm = T))
+# Convert 0 to half of the minimum value
+for(i in 1:481) {
+  CL_data[i][CL_data[i]==0] = 0.5*CL_min[i]
+}
+
+for(i in 1:256) {
+  BA_data[i][BA_data[i]==0] = 0.5*BA_min[i]
+}
+
+for(i in 1:183) {
+  PM_data[i][PM_data[i]==0] = 0.5*PM_min[i]
+}
+
+CL_info = CL[1:10]
+CL_new = cbind.data.frame(CL_info, CL_data)
+
+BA_info = BA[1:10]
+BA_new = cbind.data.frame(BA_info, BA_data)
+
+PM_info = PM[1:10]
+PM_new = cbind.data.frame(PM_info, PM_data)
+```
+
+### Delete outliers
 ```{r outliers}
 # Delete outliers that identified by PCA
-CL_new = CL[-c(55, 56, 121, 122, 195, 196),]
-BA_new = BA[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196),]
-PM_new = PM
+CL_new = CL_new[-c(55, 56, 121, 122, 195, 196),]
+BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196),]
+PM_new = PM_new
 ```
+
 ### Scaling
 ```{r scale data}
 # Calculate the standard deviation of the control group for each dataset
@@ -90,9 +127,38 @@ BA_log =
 ```{r CL association}
 # CL data associations
 library(survival)
-clogit(asd~)
-for(i in 1:256) {
-  
+column_name = colnames(CL_log)
+predictor_name = column_name[11:491]
+store = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:481) {
+  data = CL_log[i+10]
+  a = unlist(data)
+  model = clogit(asd~birth_season + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = CL_log)
+  result = broom::tidy(model)
+  store[i, ] = result[11,]
 }
+
+CL_result = 
+  store %>% 
+  mutate(term = predictor_name)
 ```
 
+```{r BA association}
+# BA data associations
+column_name = colnames(BA_log)
+predictor_name = column_name[11:266]
+
+store_BA = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(store_BA) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:256) {
+  data = BA_log[i+10]
+  a = unlist(data)
+  model = clogit(asd~birth_season + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = BA_log)
+  result = broom::tidy(model)
+  store_BA[i, ] = result[10,]
+}
+BA_result = 
+  store_BA %>% 
+  mutate(term = predictor_name)
+```
