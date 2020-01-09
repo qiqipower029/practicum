@@ -185,3 +185,17 @@ PM_result =
   store_PM %>% 
   mutate(term = predictor_name)
 ```
+
+### False Discovery Rate Correction
+```{r FDR}
+# Calculate the adjusted p-values
+# CL data
+CL_result$adjusted_pval = p.adjust(p = CL_result$p.value, method = "BH")
+
+# PM data
+PM_result$adjusted_pval = p.adjust(p = PM_result$p.value, method = "BH")
+
+# BA data
+BA_result$adjusted_pval = p.adjust(p = BA_result$p.value, method = "BH")
+```
+
