@@ -13,14 +13,15 @@ library(tidyverse)
 ### Import dataset
 ```{r import dataset}
 # Import dataset
-CL = readxl::read_excel("./ABC_Cord Blood_Metabolomics_CL data_14Nov2019.xlsx") %>% janitor::clean_names()
-BA = readxl::read_excel("./ABC_Cord Blood_Metabolomics_BA data_14Nov2019.xlsx") %>% janitor::clean_names()
-PM = readxl::read_excel("./ABC_Cord Blood_Metabolomics_PM data_14Nov2019.xlsx") %>% janitor::clean_names()
+CL = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_CL data_15Jan2020.xlsx") 
+BA = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_BA data_15Jan2020.xlsx") 
+PM = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_PM data_15Jan2020.xlsx") 
+OL =  readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_OL data_15Jan2020.xlsx")
 ```
 
 
 ### Convert 0 to half of the minimum values
-```{r}
+```{r convert 0 to half of the minimum values}
 CL_data = CL[11:491]
 BA_data = BA[11:266]
 PM_data = PM[11:193]
