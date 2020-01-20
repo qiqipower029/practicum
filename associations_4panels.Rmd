@@ -85,8 +85,8 @@ CL_pca = prcomp(CL_data_z[c(1:481)], center = F, scale. = F)
 library(ggfortify)
 autoplot(CL_pca, label = T, label.size = 3)
 
-CL_new = CL_data_z[-c(55, 56, 121, 122, 195, 196),]
-CL_pca_2 = prcomp(CL_new[c(1:481)], center = F, scale. = F)
+CL_data_new = CL_data_z[-c(55, 56, 121, 122, 195, 196),]
+CL_pca_2 = prcomp(CL_data_new[c(1:481)], center = F, scale. = F)
 autoplot(CL_pca_2, label = T, label.size = 3)
 ```
 
@@ -105,8 +105,8 @@ BA_pca = prcomp(BA_data_z[c(1:256)], center = F, scale. = F)
 library(ggfortify)
 autoplot(BA_pca, label = T, label.size = 3)
 
-BA_new = BA_data_z[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
-BA_pca_new = prcomp(BA_new[c(1:256)], center = F, scale. = F)
+BA_data_new = BA_data_z[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
+BA_pca_new = prcomp(BA_data_new[c(1:256)], center = F, scale. = F)
 autoplot(BA_pca_new, label = T, label.size = 3)
 ```
 
@@ -133,24 +133,28 @@ autoplot(OL_pca, label = T, label.size = 3)
 CL_new = CL_new[-c(55, 56, 121, 122, 195, 196),]
 BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
 PM_new = PM_new
+OL_new = OL_new
 ```
 
 ### Scaling
 ```{r scale data}
 # Calculate the standard deviation of the control group for each dataset
 BA_c = BA_new %>% 
-  group_by(strata) %>% 
-  filter(asd == 0)
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
 CL_c = CL_new %>% 
-  group_by(strata) %>% 
-  filter(asd == 0)
-PM_c = PM %>% 
-  group_by(strata) %>% 
-  filter(asd == 0)
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+PM_c = PM_new %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+OL_c = OL_new %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
 sd_BA = sapply(BA_c[11:266], function(x) sd(x))
 sd_CL = sapply(CL_c[11:491], function(x) sd(x))
 sd_PM = sapply(PM_c[11:193], function(x) sd(x))
-
+sd_OL = sapply(OL_c[11:81], function(x) sd(x))
 # Divide the standard deviation
 for(i in 1:256) {
   BA_new[i+10] = BA_new[i+10]/sd_BA[i]
@@ -160,6 +164,9 @@ for(i in 1:481) {
 }
 for(i in 1:183) {
   PM_new[i+10] = PM_new[i+10]/sd_PM[i]
+}
+for(i in 1:71) {
+  OL_new[i+10] = OL_new[i+10]/sd_PM[i]
 }
 ```
 
