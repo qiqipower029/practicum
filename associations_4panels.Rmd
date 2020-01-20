@@ -176,6 +176,7 @@ for(i in 1:71) {
 BA_log = BA_new
 CL_log = CL_new
 PM_log = PM_new
+OL_log = OL_new
 for(i in 1:256) {
   BA_log[i+10] = log10(BA_new[i+10])
 }
@@ -188,21 +189,28 @@ for(i in 1:183) {
   PM_log[i+10] = log10(PM_new[i+10])
 }
 
+for(i in 1:71) {
+  OL_log[i+10] = log10(OL_new[i+10])
+}
 ```
 
 ### Recode birth year
 ```{r recode birth year}
 CL_log = 
   CL_log %>% 
-  mutate(year_new = ifelse(birth_year <= 2000, "before 2000", birth_year))
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
 
 PM_log = 
   PM_log %>% 
-  mutate(year_new = ifelse(birth_year <= 2000, "before 2000", birth_year))
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
 
 BA_log = 
   BA_log %>% 
-  mutate(year_new = ifelse(birth_year <= 2000, "before 2000", birth_year))
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
+
+OL_log = 
+  OL_log %>% 
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
 ```
 
 ### Test for associations using conditional logistic regression
