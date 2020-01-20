@@ -224,7 +224,7 @@ colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "
 for(i in 1:481) {
   data = CL_log[i+10]
   a = unlist(data)
-  model = clogit(asd~birth_season + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = CL_log)
+  model = clogit(asd ~ as.factor(birth_season) + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = CL_log)
   result = broom::tidy(model)
   store[i, ] = result[11,]
 }
