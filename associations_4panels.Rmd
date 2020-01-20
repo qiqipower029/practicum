@@ -25,15 +25,20 @@ OL =  readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_OL data_15Jan20
 CL_data = CL[11:491]
 BA_data = BA[11:266]
 PM_data = PM[11:193]
+OL_data = OL[11:81]
 CL_data[CL_data == 0] = NA
 BA_data[BA_data == 0] = NA
 PM_data[PM_data == 0] = NA
+OL_data[OL_data == 0] = NA
 CL_min = sapply(CL_data[1:481], function(x) min(x, na.rm = T))
 BA_min = sapply(BA_data[1:256], function(x) min(x, na.rm = T))
 PM_min = sapply(PM_data[1:183], function(x) min(x, na.rm = T))
+OL_min = sapply(PM_data[1:71], function(x) min(x, na.rm = T))
+
 CL_data = CL[11:491]
 BA_data = BA[11:266]
 PM_data = PM[11:193]
+OL_data = OL[11:81]
 # Convert 0 to half of the minimum value
 for(i in 1:481) {
   CL_data[i][CL_data[i]==0] = 0.5*CL_min[i]
@@ -47,6 +52,10 @@ for(i in 1:183) {
   PM_data[i][PM_data[i]==0] = 0.5*PM_min[i]
 }
 
+for(i in 1:71) {
+  OL_data[i][OL_data[i]==0] = 0.5*OL_min[i]
+}
+
 CL_info = CL[1:10]
 CL_new = cbind.data.frame(CL_info, CL_data)
 
@@ -55,13 +64,74 @@ BA_new = cbind.data.frame(BA_info, BA_data)
 
 PM_info = PM[1:10]
 PM_new = cbind.data.frame(PM_info, PM_data)
+
+OL_info = OL[1:10]
+OL_new = cbind.data.frame(OL_info, OL_data)
 ```
+
+### PCA 
+```{r PCA for CL data}
+# Calculate z-scores
+mean_CL = mean_control = sapply(CL_data[1:481], function(x) mean(x)) 
+sd_CL = sapply(CL_data[1:481], function(x) sd(x))
+CL_data_z = CL_data
+for(i in 1:481) {
+  CL_data_z[i] = (CL_data[i] - mean_CL[i])/sd_CL[i]
+}
+
+CL_pca = prcomp(CL_data_z[c(1:481)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(CL_pca, label = T, label.size = 3)
+
+CL_new = CL_data_z[-c(55, 56, 121, 122, 195, 196),]
+CL_pca_2 = prcomp(CL_new[c(1:481)], center = F, scale. = F)
+autoplot(CL_pca_2, label = T, label.size = 3)
+```
+
+```{r PCA for BA data}
+# Calculate z-scores
+mean_BA = mean_control = sapply(BA_data[1:256], function(x) mean(x)) 
+sd_BA = sapply(BA_data[1:256], function(x) sd(x))
+BA_data_z = BA_data
+for(i in 1:256) {
+  BA_data_z[i] = (BA_data[i] - mean_BA[i])/sd_BA[i]
+}
+
+BA_pca = prcomp(BA_data_z[c(1:256)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(BA_pca, label = T, label.size = 3)
+
+BA_new = BA_data_z[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
+BA_pca_new = prcomp(BA_new[c(1:256)], center = F, scale. = F)
+autoplot(BA_pca_new, label = T, label.size = 3)
+```
+
+```{r PCA for OL data}
+# Calculate z-scores
+mean_OL = mean_control = sapply(BA_data[1:71], function(x) mean(x)) 
+sd_OL = sapply(BA_data[1:71], function(x) sd(x))
+OL_data_z = OL_data
+for(i in 1:71) {
+  OL_data_z[i] = (OL_data[i] - mean_OL[i])/sd_OL[i]
+}
+
+OL_pca = prcomp(OL_data_z[c(1:71)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(OL_pca, label = T, label.size = 3)
+```
+
 
 ### Delete outliers
 ```{r outliers}
 # Delete outliers that identified by PCA
 CL_new = CL_new[-c(55, 56, 121, 122, 195, 196),]
-BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196),]
+BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
 PM_new = PM_new
 ```
 
