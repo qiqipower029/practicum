@@ -33,7 +33,7 @@ OL_data[OL_data == 0] = NA
 CL_min = sapply(CL_data[1:481], function(x) min(x, na.rm = T))
 BA_min = sapply(BA_data[1:256], function(x) min(x, na.rm = T))
 PM_min = sapply(PM_data[1:183], function(x) min(x, na.rm = T))
-OL_min = sapply(PM_data[1:71], function(x) min(x, na.rm = T))
+OL_min = sapply(OL_data[1:71], function(x) min(x, na.rm = T))
 
 CL_data = CL[11:491]
 BA_data = BA[11:266]
@@ -112,8 +112,8 @@ autoplot(BA_pca_new, label = T, label.size = 3)
 
 ```{r PCA for OL data}
 # Calculate z-scores
-mean_OL = mean_control = sapply(BA_data[1:71], function(x) mean(x)) 
-sd_OL = sapply(BA_data[1:71], function(x) sd(x))
+mean_OL = mean_control = sapply(OL_data[1:71], function(x) mean(x)) 
+sd_OL = sapply(OL_data[1:71], function(x) sd(x))
 OL_data_z = OL_data
 for(i in 1:71) {
   OL_data_z[i] = (OL_data[i] - mean_OL[i])/sd_OL[i]
@@ -124,6 +124,9 @@ OL_pca = prcomp(OL_data_z[c(1:71)], center = F, scale. = F)
 # Plot PC1/PC2
 library(ggfortify)
 autoplot(OL_pca, label = T, label.size = 3)
+OL_data_new = OL_data_z[-c(29, 30, 85, 86),]
+OL_pca_new = prcomp(OL_data_new[c(1:71)], center = F, scale. = F)
+autoplot(OL_pca_new, label = T, label.size = 3)
 ```
 
 
@@ -133,7 +136,7 @@ autoplot(OL_pca, label = T, label.size = 3)
 CL_new = CL_new[-c(55, 56, 121, 122, 195, 196),]
 BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
 PM_new = PM_new
-OL_new = OL_new
+OL_new = OL_new[-c(29, 30, 85, 86),]
 ```
 
 ### Scaling
@@ -166,7 +169,7 @@ for(i in 1:183) {
   PM_new[i+10] = PM_new[i+10]/sd_PM[i]
 }
 for(i in 1:71) {
-  OL_new[i+10] = OL_new[i+10]/sd_PM[i]
+  OL_new[i+10] = OL_new[i+10]/sd_OL[i]
 }
 ```
 
@@ -224,9 +227,9 @@ colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "
 for(i in 1:481) {
   data = CL_log[i+10]
   a = unlist(data)
-  model = clogit(asd ~ as.factor(birth_season) + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = CL_log)
+  model = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = CL_log)
   result = broom::tidy(model)
-  store[i, ] = result[11,]
+  store[i, ] = result[1,]
 }
 
 CL_result = 
@@ -244,9 +247,9 @@ colnames(store_BA) = c("term", "estimate", "std.error", "statistic", "p.value", 
 for(i in 1:256) {
   data = BA_log[i+10]
   a = unlist(data)
-  model = clogit(asd~birth_season + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = BA_log)
+  model = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = BA_log)
   result = broom::tidy(model)
-  store_BA[i, ] = result[10,]
+  store_BA[i, ] = result[1,]
 }
 BA_result = 
   store_BA %>% 
@@ -263,9 +266,9 @@ colnames(store_PM) = c("term", "estimate", "std.error", "statistic", "p.value", 
 for(i in 1:183) {
   data = PM_log[i+10]
   a = unlist(data)
-  model = clogit(asd~birth_season + as.factor(year_new) + sex_ab_cpairsampleselection1 + a, data = PM_log)
+  model = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = PM_log)
   result = broom::tidy(model)
-  store_PM[i, ] = result[11,]
+  store_PM[i, ] = result[1,]
 }
 
 PM_result = 
@@ -273,6 +276,25 @@ PM_result =
   mutate(term = predictor_name)
 ```
 
+```{r OL association}
+# PM data associations
+column_name = colnames(OL_log)
+predictor_name = column_name[11:81]
+
+store_OL = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(store_OL) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:71) {
+  data = OL_log[i+10]
+  a = unlist(data)
+  model = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = OL_log)
+  result = broom::tidy(model)
+  store_OL[i, ] = result[1,]
+}
+
+OL_result = 
+  store_OL %>% 
+  mutate(term = predictor_name)
+```
 ### False Discovery Rate Correction
 ```{r FDR}
 # Calculate the adjusted p-values
@@ -284,6 +306,9 @@ PM_result$adjusted_pval = p.adjust(p = PM_result$p.value, method = "BH")
 
 # BA data
 BA_result$adjusted_pval = p.adjust(p = BA_result$p.value, method = "BH")
+
+# OL data
+OL_result$adjusted_pval = p.adjust(p = OL_result$p.value, method = "BH")
 ```
 
 
