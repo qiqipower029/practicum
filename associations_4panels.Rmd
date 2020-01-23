@@ -312,3 +312,9 @@ OL_result$adjusted_pval = p.adjust(p = OL_result$p.value, method = "BH")
 ```
 
 
+### Add squared terms for each analytes
+```{r CL data}
+# Add squared term in CL data
+
+```
+
