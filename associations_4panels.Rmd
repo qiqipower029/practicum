@@ -368,3 +368,65 @@ store =
 BA_quadratic_result = 
   cbind.data.frame(store, p_chisq)
 ```
+
+```{r PM data}
+# Add squared term in CL data
+column_name = colnames(PM_log)
+predictor_name = column_name[11:193]
+store = data.frame(matrix(ncol = 7, nrow = 0))
+p_chisq = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+colnames(p_chisq) = c("loglik", "Chisq", "Df", "P(>|Chi|)")
+for(i in 1:183) {
+  data = PM_log[i+10]
+  a = unlist(data) 
+  PM_log$b = a*a
+  model1 = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = PM_log)
+  model2 = clogit(PROT_ASD_2015 ~ a + b + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = PM_log)
+  result = broom::tidy(model2)
+  lrt = anova(model1, model2) %>% as.data.frame()
+  store[i, ] = result[2,]
+  p_chisq[i, ] = lrt[2, ]
+}
+
+store = 
+  store %>% 
+  mutate(term = predictor_name)
+
+PM_quadratic_result = 
+  cbind.data.frame(store, p_chisq)
+```
+
+```{r OL data}
+# Add squared term in CL data
+column_name = colnames(OL_log)
+predictor_name = column_name[11:81]
+store = data.frame(matrix(ncol = 7, nrow = 0))
+p_chisq = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+colnames(p_chisq) = c("loglik", "Chisq", "Df", "P(>|Chi|)")
+for(i in 1:71) {
+  data = OL_log[i+10]
+  a = unlist(data) 
+  OL_log$b = a*a
+  model1 = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = OL_log)
+  model2 = clogit(PROT_ASD_2015 ~ a + b + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = OL_log)
+  result = broom::tidy(model2)
+  lrt = anova(model1, model2) %>% as.data.frame()
+  store[i, ] = result[2,]
+  p_chisq[i, ] = lrt[2, ]
+}
+
+store = 
+  store %>% 
+  mutate(term = predictor_name)
+
+OL_quadratic_result = 
+  cbind.data.frame(store, p_chisq)
+```
+
+### FWER correction using Hockberg step-up procedure
+```{r fwer correction}
+
+```
+
