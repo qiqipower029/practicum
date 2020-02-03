@@ -427,6 +427,10 @@ OL_quadratic_result =
 
 ### FWER correction using Hockberg step-up procedure
 ```{r fwer correction}
-
+# FWER correction for CL results
+CL_quadratic_result$p_adjust = p.adjust(CL_quadratic_result$p.value, method = "hochberg")
+BA_quadratic_result$p_adjust = p.adjust(BA_quadratic_result$p.value, method = "hochberg")
+PM_quadratic_result$p_adjust = p.adjust(PM_quadratic_result$p.value, method = "hochberg")
+OL_quadratic_result$p_adjust = p.adjust(OL_quadratic_result$p.value, method = "hochberg")
 ```
 
