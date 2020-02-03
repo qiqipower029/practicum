@@ -312,9 +312,32 @@ OL_result$adjusted_pval = p.adjust(p = OL_result$p.value, method = "BH")
 ```
 
 
-### Add squared terms for each analytes
+### Add quadratic terms for each analytes
 ```{r CL data}
 # Add squared term in CL data
+column_name = colnames(CL_log)
+predictor_name = column_name[11:491]
+store = data.frame(matrix(ncol = 7, nrow = 0))
+p_chisq = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+colnames(p_chisq) = c("loglik", "Chisq", "Df", "P(>|Chi|)")
+for(i in 1:481) {
+  data = CL_log[i+10]
+  a = unlist(data) 
+  CL_log$b = a*a
+  model1 = clogit(PROT_ASD_2015 ~ a + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = CL_log)
+  model2 = clogit(PROT_ASD_2015 ~ a + b + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = CL_log)
+  result = broom::tidy(model2)
+  lrt = anova(model1, model2) %>% as.data.frame()
+  store[i, ] = result[2,]
+  p_chisq[i, ] = lrt[2, ]
+}
 
+store = 
+  store %>% 
+  mutate(term = predictor_name)
+
+CL_quadratic_result = 
+  cbind.data.frame(store, p_chisq)
 ```
 
