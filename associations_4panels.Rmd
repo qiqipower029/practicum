@@ -428,9 +428,25 @@ OL_quadratic_result =
 ### FWER correction using Hockberg step-up procedure
 ```{r fwer correction}
 # FWER correction for CL results
-CL_quadratic_result$p_adjust = p.adjust(CL_quadratic_result$p.value, method = "hochberg")
-BA_quadratic_result$p_adjust = p.adjust(BA_quadratic_result$p.value, method = "hochberg")
-PM_quadratic_result$p_adjust = p.adjust(PM_quadratic_result$p.value, method = "hochberg")
-OL_quadratic_result$p_adjust = p.adjust(OL_quadratic_result$p.value, method = "hochberg")
+CL_quadratic_result$p_adjust = p.adjust(CL_quadratic_result$`P(>|Chi|)`, method = "hochberg")
+BA_quadratic_result$p_adjust = p.adjust(BA_quadratic_result$`P(>|Chi|)`, method = "hochberg")
+PM_quadratic_result$p_adjust = p.adjust(PM_quadratic_result$`P(>|Chi|)`, method = "hochberg")
+OL_quadratic_result$p_adjust = p.adjust(OL_quadratic_result$`P(>|Chi|)`, method = "hochberg")
+```
+
+### 90th quantile analysis
+```{r quantile analysis}
+# Calculate 90th quantiles of control group for each variable in each panel
+CL_quantile = sapply(CL_c[11:491], function(x) quantile(x, probs = 0.9))
+BA_quantile = sapply(BA_c[11:266], function(x) quantile(x, probs = 0.9))
+PM_quantile = sapply(PM_c[11:193], function(x) quantile(x, probs = 0.9))
+OL_quantile = sapply(OL_c[11:81], function(x) quantile(x, probs = 0.9))
+
+CL_converted = data.frame(matrix(ncol = 481, nrow = 194))
+# Convert variables from continuous to binary
+for (i in 1:481) {
+  CL_converted[i] = as.numeric(CL_new[i+10]> CL_quantile[i])
+}
+
 ```
 
