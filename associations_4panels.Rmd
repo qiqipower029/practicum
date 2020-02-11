@@ -443,10 +443,33 @@ PM_quantile = sapply(PM_c[11:193], function(x) quantile(x, probs = 0.9))
 OL_quantile = sapply(OL_c[11:81], function(x) quantile(x, probs = 0.9))
 
 CL_converted = data.frame(matrix(ncol = 481, nrow = 194))
+CL_names = colnames(CL_new)
+colnames(CL_converted) = CL_names[11:481]
 # Convert variables from continuous to binary
 for (i in 1:481) {
   CL_converted[i] = as.numeric(CL_new[i+10]> CL_quantile[i])
 }
 
+BA_converted = data.frame(matrix(ncol = 256, nrow = 186))
+BA_names = colnames(BA_new)
+colnames(BA_converted) = BA_names[11:266]
+for (i in 1:256) {
+  BA_converted[i] = as.numeric(BA_new[i+10]> BA_quantile[i])
+}
+
+PM_converted = data.frame(matrix(ncol = 183, nrow = 196))
+PM_names = colnames(PM_new)
+colnames(PM_converted) = PM_names[11:193]
+for (i in 1:183) {
+  PM_converted[i] = as.numeric(PM_new[i+10]> PM_quantile[i])
+}
+
+
+OL_converted = data.frame(matrix(ncol = 71, nrow = 196))
+OL_names = colnames(OL_new)
+colnames(OL_converted) = OL_names[11:81]
+for (i in 1:71) {
+  OL_converted[i] = as.numeric(OL_new[i+10]> OL_quantile[i])
+}
 ```
 
