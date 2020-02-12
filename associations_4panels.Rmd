@@ -471,5 +471,8 @@ colnames(OL_converted) = OL_names[11:81]
 for (i in 1:71) {
   OL_converted[i] = as.numeric(OL_new[i+10]> OL_quantile[i])
 }
+
+# Combine the data part and the demographic part
+
 ```
 
