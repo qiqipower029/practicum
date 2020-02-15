@@ -444,7 +444,7 @@ OL_quantile = sapply(OL_c[11:81], function(x) quantile(x, probs = 0.9))
 
 CL_converted = data.frame(matrix(ncol = 481, nrow = 194))
 CL_names = colnames(CL_new)
-colnames(CL_converted) = CL_names[11:481]
+colnames(CL_converted) = CL_names[11:491]
 # Convert variables from continuous to binary
 for (i in 1:481) {
   CL_converted[i] = as.numeric(CL_new[i+10]> CL_quantile[i])
@@ -483,14 +483,30 @@ BA_binary= cbind.data.frame(BA_info_2, BA_converted)
 PM_binary= cbind.data.frame(PM_info_2, PM_converted)
 OL_binary= cbind.data.frame(OL_info_2, OL_converted)
 
+# Recode year again
+CL_binary = 
+  CL_binary %>% 
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
+
+PM_binary = 
+  PM_binary %>% 
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
+
+BA_binary = 
+  BA_binary %>% 
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
+
+OL_binary = 
+  OL_binary %>% 
+  mutate(year_new = ifelse(BirthYear <= 2000, "before 2000", BirthYear))
 # Perform conditional logistic regression again with converted values
 # CL data
 column_name = colnames(CL_binary)
 predictor_name = column_name[11:491]
 CL_store = data.frame(matrix(ncol = 7, nrow = 0))
-colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+colnames(CL_store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
 for(i in 1:481) {
-  data = CL_log[i+10]
+  data = CL_binary[i+10]
   a = unlist(data)
   model = clogit(PROT_ASD_2015 ~ factor(a) + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = CL_binary)
   result = broom::tidy(model)
@@ -500,5 +516,7 @@ for(i in 1:481) {
 CL_binary_result = 
   CL_store %>% 
   mutate(term = predictor_name)
+
+view(CL_binary_result)
 ```
 
