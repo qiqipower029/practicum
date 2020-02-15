@@ -517,6 +517,22 @@ CL_binary_result =
   CL_store %>% 
   mutate(term = predictor_name)
 
-view(CL_binary_result)
+# BA data
+column_name = colnames(BA_binary)
+predictor_name = column_name[11:266]
+BA_store = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(BA_store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:256) {
+  data = BA_binary[i+10]
+  a = unlist(data)
+  model = clogit(PROT_ASD_2015 ~ factor(a) + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = BA_binary)
+  result = broom::tidy(model)
+  BA_store[i, ] = result[1,]
+}
+
+BA_binary_result = 
+  BA_store %>% 
+  mutate(term = predictor_name)
+
 ```
 
