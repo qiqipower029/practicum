@@ -461,7 +461,7 @@ PM_converted = data.frame(matrix(ncol = 183, nrow = 196))
 PM_names = colnames(PM_new)
 colnames(PM_converted) = PM_names[11:193]
 for (i in 1:183) {
-  PM_converted[i] =PM_new[i+10]> PM_quantile[i]
+  PM_converted[i] = PM_new[i+10]> PM_quantile[i]
 }
 
 
