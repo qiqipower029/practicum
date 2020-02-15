@@ -569,3 +569,17 @@ OL_binary_result =
   mutate(term = predictor_name)
 ```
 
+```{r FDR adjustments}
+# Calculate the adjusted p-values
+CL_binary_result$adjusted_pval = p.adjust(p = CL_binary_result$p.value, method = "BH")
+
+# PM data
+PM_binary_result$adjusted_pval = p.adjust(p = PM_binary_result$p.value, method = "BH")
+
+# BA data
+BA_binary_result$adjusted_pval = p.adjust(p = BA_binary_result$p.value, method = "BH")
+
+# OL data
+OL_binary_result$adjusted_pval = p.adjust(p = OL_binary_result$p.value, method = "BH")
+```
+
