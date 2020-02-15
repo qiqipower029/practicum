@@ -473,6 +473,17 @@ for (i in 1:71) {
 }
 
 # Combine the data part and the demographic part
+CL_info_2 = CL_new[1:10]
+BA_info_2 = BA_new[1:10]
+PM_info_2 = PM_new[1:10]
+OL_info_2 = OL_new[1:10]
+
+CL_binary= cbind.data.frame(CL_info_2, CL_converted)
+BA_binary= cbind.data.frame(BA_info_2, BA_converted)
+PM_binary= cbind.data.frame(PM_info_2, PM_converted)
+OL_binary= cbind.data.frame(OL_info_2, OL_converted)
+
+# Perform conditional logistic regression again with converted values
 
 ```
 
