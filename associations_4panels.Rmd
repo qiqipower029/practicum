@@ -484,6 +484,21 @@ PM_binary= cbind.data.frame(PM_info_2, PM_converted)
 OL_binary= cbind.data.frame(OL_info_2, OL_converted)
 
 # Perform conditional logistic regression again with converted values
+# CL data
+column_name = colnames(CL_binary)
+predictor_name = column_name[11:491]
+CL_store = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:481) {
+  data = CL_log[i+10]
+  a = unlist(data)
+  model = clogit(PROT_ASD_2015 ~ factor(a) + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = CL_binary)
+  result = broom::tidy(model)
+  CL_store[i, ] = result[1,]
+}
 
+CL_binary_result = 
+  CL_store %>% 
+  mutate(term = predictor_name)
 ```
 
