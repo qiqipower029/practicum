@@ -534,5 +534,38 @@ BA_binary_result =
   BA_store %>% 
   mutate(term = predictor_name)
 
+# PM data
+column_name = colnames(PM_binary)
+predictor_name = column_name[11:193]
+PM_store = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(PM_store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:183) {
+  data = PM_binary[i+10]
+  a = unlist(data)
+  model = clogit(PROT_ASD_2015 ~ factor(a) + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = PM_binary)
+  result = broom::tidy(model)
+  PM_store[i, ] = result[1,]
+}
+
+PM_binary_result = 
+  PM_store %>% 
+  mutate(term = predictor_name)
+
+# OL data
+column_name = colnames(OL_binary)
+predictor_name = column_name[11:81]
+OL_store = data.frame(matrix(ncol = 7, nrow = 0))
+colnames(OL_store) = c("term", "estimate", "std.error", "statistic", "p.value",   "conf.low",  "conf.high")
+for(i in 1:71) {
+  data = OL_binary[i+10]
+  a = unlist(data)
+  model = clogit(PROT_ASD_2015 ~ factor(a) + factor(BirthSeason) + factor(year_new) + factor(Sex) + strata(Strata), data = OL_binary)
+  result = broom::tidy(model)
+  OL_store[i, ] = result[1,]
+}
+
+OL_binary_result = 
+  OL_store %>% 
+  mutate(term = predictor_name)
 ```
 
