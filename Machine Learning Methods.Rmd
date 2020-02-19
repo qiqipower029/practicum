@@ -5,3 +5,65 @@ date: "2/19/2020"
 output: pdf_document
 ---
 
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+### Import dataset
+```{r import dataset}
+# Import dataset
+CL = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_CL data_15Jan2020.xlsx") 
+BA = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_BA data_15Jan2020.xlsx") 
+PM = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_PM data_15Jan2020.xlsx") 
+OL =  readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_OL data_15Jan2020.xlsx")
+```
+
+
+### Convert 0 to half of the minimum values
+```{r convert 0 to half of the minimum values}
+CL_data = CL[11:491]
+BA_data = BA[11:266]
+PM_data = PM[11:193]
+OL_data = OL[11:81]
+CL_data[CL_data == 0] = NA
+BA_data[BA_data == 0] = NA
+PM_data[PM_data == 0] = NA
+OL_data[OL_data == 0] = NA
+CL_min = sapply(CL_data[1:481], function(x) min(x, na.rm = T))
+BA_min = sapply(BA_data[1:256], function(x) min(x, na.rm = T))
+PM_min = sapply(PM_data[1:183], function(x) min(x, na.rm = T))
+OL_min = sapply(OL_data[1:71], function(x) min(x, na.rm = T))
+
+CL_data = CL[11:491]
+BA_data = BA[11:266]
+PM_data = PM[11:193]
+OL_data = OL[11:81]
+# Convert 0 to half of the minimum value
+for(i in 1:481) {
+  CL_data[i][CL_data[i]==0] = 0.5*CL_min[i]
+}
+
+for(i in 1:256) {
+  BA_data[i][BA_data[i]==0] = 0.5*BA_min[i]
+}
+
+for(i in 1:183) {
+  PM_data[i][PM_data[i]==0] = 0.5*PM_min[i]
+}
+
+for(i in 1:71) {
+  OL_data[i][OL_data[i]==0] = 0.5*OL_min[i]
+}
+
+CL_info = CL[1:10]
+CL_new = cbind.data.frame(CL_info, CL_data)
+
+BA_info = BA[1:10]
+BA_new = cbind.data.frame(BA_info, BA_data)
+
+PM_info = PM[1:10]
+PM_new = cbind.data.frame(PM_info, PM_data)
+
+OL_info = OL[1:10]
+OL_new = cbind.data.frame(OL_info, OL_data)
+```
