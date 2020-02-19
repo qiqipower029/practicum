@@ -10,7 +10,7 @@ library(tidyverse)
 library(caret)
 ```
 
-### Import dataset
+## Import dataset
 ```{r import dataset}
 # Import dataset
 CL = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_CL data_15Jan2020.xlsx") 
@@ -20,7 +20,7 @@ OL =  readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_OL data_15Jan20
 ```
 
 
-### Convert 0 to half of the minimum values
+## Convert 0 to half of the minimum values
 ```{r convert 0 to half of the minimum values}
 CL_data = CL[11:491]
 BA_data = BA[11:266]
@@ -68,3 +68,6 @@ PM_new = cbind.data.frame(PM_info, PM_data)
 OL_info = OL[1:10]
 OL_new = cbind.data.frame(OL_info, OL_data)
 ```
+
+
+## Machine Learning Methods
