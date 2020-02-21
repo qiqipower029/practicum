@@ -71,7 +71,16 @@ OL_new = cbind.data.frame(OL_info, OL_data)
 
 
 ## Machine Learning Methods
-```{r}
+
+### Initial Setting
+```{r set control}
+# Initial setting for machine learning methods
+
+```
+
+### LASSO
+```{r LASSO}
+# Lasso method
 
 ```
 
