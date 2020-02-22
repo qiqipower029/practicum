@@ -216,8 +216,10 @@ model.rf = train(PROT_ASD_2015~., CL_analysis,
                  tuneGrid = rf.grid,
                  metric = "ROC",
                  trControl = ctrl)
+```
 
-# Variable Importance
+#### AdaBoost
+```{r AdaBoost for CL data}
 
 ```
 
