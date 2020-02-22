@@ -173,35 +173,29 @@ roc.glm = roc(CL_analysis$PROT_ASD_2015[-rowTrain], glm.pred)
 plot(roc.glm, legacy.axes = T)
 ```
 
+#### LASSO
 
-
-
-
-
-```{r LASSO}
+```{r LASSO for CL data}
 # Lasso regression
 set.seed(1029)
-CL_data_log = CL_log[11:491]
-CL_dataset = cbind.data.frame(CL_log$PROT_ASD_2015, CL_data_log)
-BA_data_log = BA_log[11:266]
-BA_dataset = cbind.data.frame(BA_log$PROT_ASD_2015, BA_data_log)
-PM_data_log = PM_log[11:193]
-PM_dataset = cbind.data.frame(PM_log$PROT_ASD_2015, PM_data_log)
-OL_data_log = OL_log[11:81]
-OL_dataset = cbind.data.frame(OL_log$PROT_ASD_2015, OL_data_log)
+
 # Set outcome and features
-x_CL = model.matrix(CL_log$PROT_ASD_2015~., CL_dataset)[, -1]
-x_BA = model.matrix(BA_log$PROT_ASD_2015~., BA_dataset)[, -1]
-x_PM = model.matrix(PM_log$PROT_ASD_2015~., PM_dataset)[, -1]
-x_OL = model.matrix(OL_log$PROT_ASD_2015~., OL_dataset)[, -1]
-
-# LASSO for CL data
-lasso_glmnet = cv.glmnet(x_CL, CL_log$PROT_ASD_2015, alpha = 1, lambda = exp(seq(-13, 0, length = 1000)), family = "binomial")
-lasso_glmnet$lambda.min
-
-# Plot the Binomial deviance vs lambda
-plot(lasso_glmnet)
-
-predict(lasso_glmnet, s="lambda.min", type = "coefficients")
+x_CL = model.matrix(CL_analysis$PROT_ASD_2015~., CL_analysis)[rowTrain, -1]
+y_CL = CL_analysis$PROT_ASD_2015[rowTrain]
+# Fit LASSO Regression
+model.lasso = train(x = CL_analysis[rowTrain, 2:482],
+                    y = CL_analysis$PROT_ASD_2015[rowTrain],
+                    method = "glmnet",
+                    tuneGrid = expand.grid(alpha = 1,
+                                           lambda = exp(seq(-5, -1, length = 1000))),
+                    metric = "ROC",
+                    family = "binomial",
+                    trControl = ctrl)
+plot(model.lasso, xTrans = function(x) log(x))
+model.lasso$bestTune
+coef(lasso_caret$finalModel, lasso_caret$bestTune$lambda)
+lasso.pred = predict(model.lasso, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.lasso = roc(CL_analysis$PROT_ASD_2015[-rowTrain], lasso.pred)
+plot(roc.lasso, legacy.axes = T)
 ```
 
