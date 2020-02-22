@@ -220,6 +220,50 @@ model.rf = train(PROT_ASD_2015~., CL_analysis,
 
 #### AdaBoost
 ```{r AdaBoost for CL data}
+# Adaboost loss function
+ada.grid = expand.grid(n.trees = c(1000, 2000, 3000),
+                       interaction.depth = 1:6,
+                       shrinkage = c(0.001, 0.003, 0.005),
+                       n.minobsinnode = 1)
+
+set.seed(1029)
+
+model.ada = train(PROT_ASD_2015~., CL_analysis,
+                  subset = rowTrain,
+                  tuneGrid = ada.grid,
+                  trControl = ctrl,
+                  method = "gbm",
+                  distribution = "adaboost",
+                  metric = "ROC",
+                  verbose = FALSE)
+
+```
+
+#### XGBoost
+```{r XGboost for CL data}
+# XGBoost
+xgboost.grid = expand.grid(eta = 0.1, 
+                           colsample_bytree=c(0.5,0.7),
+                           max_depth=c(3,6),
+                           nrounds=100,
+                           gamma=1,
+                           min_child_weight=2,
+                           subsample = 1)
+
+set.seed(1029)
+
+modelxgboost = train(PROT_ASD_2015~., 
+                     CL_analysis,
+                     subset = rowTrain,
+                     method = "xgbTree",
+                     trControl = ctrl,
+                     tuneGrid = xgboost.grid,
+                     metric = "ROC",
+                     verbose = F)
+```
+
+### Model Comparison
+```{r compare ROC curves}
 
 ```
 
