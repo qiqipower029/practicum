@@ -264,6 +264,19 @@ modelxgboost = train(PROT_ASD_2015~.,
 
 ### Model Comparison
 ```{r compare ROC curves}
+# Calculate ROC for each model
+glm.pred = predict(model.glm, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.glm = roc(CL_analysis$PROT_ASD_2015[-rowTrain], glm.pred)
 
+lasso.pred = predict(model.lasso, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.lasso = roc(CL_analysis$PROT_ASD_2015[-rowTrain], lasso.pred)
+
+ada.pred = predict(model.ada, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.ada = roc(CL_analysis$PROT_ASD_2015[-rowTrain], ada.pred)
+
+xgboost.pred = predict(modelxgboost, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.xgboost = roc(CL_analysis$PROT_ASD_2015[-rowTrain], xgboost.pred)
+
+plot(roc.glm, legacy.axes = T)
 ```
 
