@@ -3,11 +3,14 @@ title: "Machine Learning Methods"
 author: "Jieqi Tu (jt3098)"
 date: "2/19/2020"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(caret)
+library(glmnet)
 ```
 
 ## Import dataset
@@ -69,18 +72,136 @@ OL_info = OL[1:10]
 OL_new = cbind.data.frame(OL_info, OL_data)
 ```
 
+## Scaling and Transformation
+```{r scaling and transformation}
+# Divide variables by the sd of control groups
+BA_c = BA_new %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+CL_c = CL_new %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+PM_c = PM_new %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+OL_c = OL_new %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+sd_BA = sapply(BA_c[11:266], function(x) sd(x))
+sd_CL = sapply(CL_c[11:491], function(x) sd(x))
+sd_PM = sapply(PM_c[11:193], function(x) sd(x))
+sd_OL = sapply(OL_c[11:81], function(x) sd(x))
 
-## Machine Learning Methods
+# Divide the standard deviation
+for(i in 1:256) {
+  BA_new[i+10] = BA_new[i+10]/sd_BA[i]
+}
+for(i in 1:481) {
+  CL_new[i+10] = CL_new[i+10]/sd_CL[i]
+}
+for(i in 1:183) {
+  PM_new[i+10] = PM_new[i+10]/sd_PM[i]
+}
+for(i in 1:71) {
+  OL_new[i+10] = OL_new[i+10]/sd_OL[i]
+}
 
+# Log Transformation
+BA_log = BA_new
+CL_log = CL_new
+PM_log = PM_new
+OL_log = OL_new
+for(i in 1:256) {
+  BA_log[i+10] = log10(BA_new[i+10])
+}
+
+for(i in 1:481) {
+  CL_log[i+10] = log10(CL_new[i+10])
+}
+
+for(i in 1:183) {
+  PM_log[i+10] = log10(PM_new[i+10])
+}
+
+for(i in 1:71) {
+  OL_log[i+10] = log10(OL_new[i+10])
+}
+```
+
+## Classification Methods
 ### Initial Setting
 ```{r set control}
 # Initial setting for machine learning methods
-
+ctrl = trainControl(method = "repeatedcv", number = 5,
+                    summaryFunction = twoClassSummary,
+                    classProbs = TRUE)
 ```
 
-### LASSO
-```{r LASSO}
-# Lasso method
+### Linear Methods for Classification
 
+#### Logistic Regression
+```{r logistic regression, warning=FALSE}
+# Delete matching variables
+CL_analysis = CL_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
+
+# Divide data into two parts
+set.seed(1029)
+rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
+                               p = 0.8,
+                               list = FALSE)
+
+# Rename the outcome variable
+model.glm = train(x = CL_analysis[rowTrain, 2:482],
+                  y = CL_analysis$PROT_ASD_2015[rowTrain],
+                  method = "glm",
+                  metric = "ROC",
+                  trControl = ctrl)
+
+
+CL_analysis$PROT_ASD_2015 = ifelse(CL_analysis$PROT_ASD_2015 == "1", "Positive", "Negative")
+
+# Rename the outcome variable
+model.glm = train(x = CL_analysis[rowTrain, 2:482],
+                  y = CL_analysis$PROT_ASD_2015[rowTrain],
+                  method = "glm",
+                  metric = "ROC",
+                  trControl = ctrl)
+
+# Test performance
+glm.pred = predict(model.glm, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.glm = roc(CL_analysis$PROT_ASD_2015[-rowTrain], glm.pred)
+plot(roc.glm, legacy.axes = T)
+```
+
+
+
+
+
+
+```{r LASSO}
+# Lasso regression
+set.seed(1029)
+CL_data_log = CL_log[11:491]
+CL_dataset = cbind.data.frame(CL_log$PROT_ASD_2015, CL_data_log)
+BA_data_log = BA_log[11:266]
+BA_dataset = cbind.data.frame(BA_log$PROT_ASD_2015, BA_data_log)
+PM_data_log = PM_log[11:193]
+PM_dataset = cbind.data.frame(PM_log$PROT_ASD_2015, PM_data_log)
+OL_data_log = OL_log[11:81]
+OL_dataset = cbind.data.frame(OL_log$PROT_ASD_2015, OL_data_log)
+# Set outcome and features
+x_CL = model.matrix(CL_log$PROT_ASD_2015~., CL_dataset)[, -1]
+x_BA = model.matrix(BA_log$PROT_ASD_2015~., BA_dataset)[, -1]
+x_PM = model.matrix(PM_log$PROT_ASD_2015~., PM_dataset)[, -1]
+x_OL = model.matrix(OL_log$PROT_ASD_2015~., OL_dataset)[, -1]
+
+# LASSO for CL data
+lasso_glmnet = cv.glmnet(x_CL, CL_log$PROT_ASD_2015, alpha = 1, lambda = exp(seq(-13, 0, length = 1000)), family = "binomial")
+lasso_glmnet$lambda.min
+
+# Plot the Binomial deviance vs lambda
+plot(lasso_glmnet)
+
+predict(lasso_glmnet, s="lambda.min", type = "coefficients")
 ```
 
