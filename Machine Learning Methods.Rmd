@@ -199,3 +199,25 @@ roc.lasso = roc(CL_analysis$PROT_ASD_2015[-rowTrain], lasso.pred)
 plot(roc.lasso, legacy.axes = T)
 ```
 
+### Classification Trees
+
+#### Random Forest
+```{r RF for CL data}
+# Random Forest
+rf.grid = expand.grid(mtry = 1:160,
+                      splitrule = "gini",
+                      min.node.size = 1:6)
+
+set.seed(1029)
+
+model.rf = train(PROT_ASD_2015~., CL_analysis,
+                 subset = rowTrain,
+                 method = "ranger",
+                 tuneGrid = rf.grid,
+                 metric = "ROC",
+                 trControl = ctrl)
+
+# Variable Importance
+
+```
+
