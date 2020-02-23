@@ -11,6 +11,7 @@ editor_options:
 library(tidyverse)
 library(caret)
 library(glmnet)
+library(pROC)
 ```
 
 ## Import dataset
@@ -151,13 +152,6 @@ rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
                                list = FALSE)
 
 # Rename the outcome variable
-model.glm = train(x = CL_analysis[rowTrain, 2:482],
-                  y = CL_analysis$PROT_ASD_2015[rowTrain],
-                  method = "glm",
-                  metric = "ROC",
-                  trControl = ctrl)
-
-
 CL_analysis$PROT_ASD_2015 = ifelse(CL_analysis$PROT_ASD_2015 == "1", "Positive", "Negative")
 
 # Rename the outcome variable
@@ -193,7 +187,7 @@ model.lasso = train(x = CL_analysis[rowTrain, 2:482],
                     trControl = ctrl)
 plot(model.lasso, xTrans = function(x) log(x))
 model.lasso$bestTune
-coef(lasso_caret$finalModel, lasso_caret$bestTune$lambda)
+coef(model.lasso$finalModel, model.lasso$bestTune$lambda)
 lasso.pred = predict(model.lasso, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
 roc.lasso = roc(CL_analysis$PROT_ASD_2015[-rowTrain], lasso.pred)
 plot(roc.lasso, legacy.axes = T)
@@ -274,9 +268,30 @@ roc.lasso = roc(CL_analysis$PROT_ASD_2015[-rowTrain], lasso.pred)
 ada.pred = predict(model.ada, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
 roc.ada = roc(CL_analysis$PROT_ASD_2015[-rowTrain], ada.pred)
 
+rf.pred = predict(model.rf, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
+roc.rf = roc(CL_analysis$PROT_ASD_2015[-rowTrain], rf.pred)
+
 xgboost.pred = predict(modelxgboost, newdata = CL_analysis[-rowTrain,], type = "prob")[,2]
 roc.xgboost = roc(CL_analysis$PROT_ASD_2015[-rowTrain], xgboost.pred)
 
+auc = c(roc.glm$auc[1],roc.lasso$auc[1],roc.ada$auc[1],roc.rf$auc[1],roc.xgboost$auc[1])
+
 plot(roc.glm, legacy.axes = T)
+plot(roc.lasso, col = 2, add = T)
+plot(roc.ada, col= 3, add = T)
+plot(roc.rf, col= 4, add = T)
+plot(roc.xgboost, col= 5, add = T)
+modelNames = c("glm", "lasso", "AdaBoost", "random forest", "XGBoost")
+legend("bottomright", legend = paste0(modelNames, ": ", round(auc, 3)), col = 1:5, lwd = 2)
+
+res = resamples(list(GLM = model.glm,
+                     LASSO = model.lasso,
+                     AdaBoost = model.ada,
+                     RandomForest = model.rf,
+                     XGBoost =modelxgboost))
+
+summary(res)
+
+bwplot(res, metric = "ROC")
 ```
 
