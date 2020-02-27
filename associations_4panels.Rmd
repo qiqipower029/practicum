@@ -3,6 +3,8 @@ title: "associations_4panels"
 author: "Jieqi Tu (jt3098)"
 date: "1/19/2020"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -124,19 +126,36 @@ OL_pca = prcomp(OL_data_z[c(1:71)], center = F, scale. = F)
 # Plot PC1/PC2
 library(ggfortify)
 autoplot(OL_pca, label = T, label.size = 3)
-OL_data_new = OL_data_z[-c(29, 30, 85, 86),]
+OL_data_new = OL_data_z[-c(123, 124, 159, 160, 29, 30, 85, 86),]
 OL_pca_new = prcomp(OL_data_new[c(1:71)], center = F, scale. = F)
 autoplot(OL_pca_new, label = T, label.size = 3)
 ```
 
+```{r PCA for PM data}
+# Calculate z-scores
+mean_PM = mean_control = sapply(PM_data[1:183], function(x) mean(x)) 
+sd_PM = sapply(PM_data[1:183], function(x) sd(x))
+PM_data_z = PM_data
+for(i in 1:183) {
+  PM_data_z[i] = (PM_data[i] - mean_PM[i])/sd_PM[i]
+}
 
+PM_pca = prcomp(PM_data_z[c(1:183)], center = F, scale. = F)
+
+# Plot PC1/PC2
+library(ggfortify)
+autoplot(PM_pca, label = T, label.size = 3)
+PM_data_new = PM_data_z[-c(31,32),]
+PM_pca_new = prcomp(PM_data_new[c(1:71)], center = F, scale. = F)
+autoplot(PM_pca_new, label = T, label.size = 3)
+```
 ### Delete outliers
 ```{r outliers}
 # Delete outliers that identified by PCA
-CL_new = CL_new[-c(55, 56, 121, 122, 195, 196),]
+CL_new = CL_new[-c(39, 40, 55, 56, 121, 122, 195, 196),]
 BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
 PM_new = PM_new
-OL_new = OL_new[-c(29, 30, 85, 86),]
+OL_new = OL_new[-c(123, 124, 29, 30, 85, 86),]
 ```
 
 ### Scaling
