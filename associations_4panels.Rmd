@@ -87,7 +87,7 @@ CL_pca = prcomp(CL_data_z[c(1:481)], center = F, scale. = F)
 library(ggfortify)
 autoplot(CL_pca, label = T, label.size = 3)
 
-CL_data_new = CL_data_z[-c(55, 56, 121, 122, 195, 196),]
+CL_data_new = CL_data_z[-c(55, 56, 121, 122, 199, 200),]
 CL_pca_2 = prcomp(CL_data_new[c(1:481)], center = F, scale. = F)
 autoplot(CL_pca_2, label = T, label.size = 3)
 ```
@@ -152,7 +152,7 @@ autoplot(PM_pca_new, label = T, label.size = 3)
 ### Delete outliers
 ```{r outliers}
 # Delete outliers that identified by PCA
-CL_new = CL_new[-c(39, 40, 55, 56, 121, 122, 195, 196),]
+CL_new = CL_new[-c(39, 40, 55, 56, 121, 122, 199, 200),]
 BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
 PM_new = PM_new[-c(31, 32),]
 OL_new = OL_new[-c(159, 160, 123, 124, 29, 30, 85, 86),]
