@@ -85,39 +85,6 @@ OL_new = OL_new[-c(159, 160, 123, 124, 29, 30, 85, 86),]
 ## Scaling and Transformation
 ```{r scaling and transformation}
 # Base 10 log transformation
-
-# Divide variables by the sd of control groups
-BA_c = BA_new %>% 
-  group_by(Strata) %>% 
-  filter(PROT_ASD_2015 == 0)
-CL_c = CL_new %>% 
-  group_by(Strata) %>% 
-  filter(PROT_ASD_2015 == 0)
-PM_c = PM_new %>% 
-  group_by(Strata) %>% 
-  filter(PROT_ASD_2015 == 0)
-OL_c = OL_new %>% 
-  group_by(Strata) %>% 
-  filter(PROT_ASD_2015 == 0)
-sd_BA = sapply(BA_c[11:266], function(x) sd(x))
-sd_CL = sapply(CL_c[11:491], function(x) sd(x))
-sd_PM = sapply(PM_c[11:193], function(x) sd(x))
-sd_OL = sapply(OL_c[11:81], function(x) sd(x))
-
-# Divide the standard deviation
-for(i in 1:256) {
-  BA_new[i+10] = BA_new[i+10]/sd_BA[i]
-}
-for(i in 1:481) {
-  CL_new[i+10] = CL_new[i+10]/sd_CL[i]
-}
-for(i in 1:183) {
-  PM_new[i+10] = PM_new[i+10]/sd_PM[i]
-}
-for(i in 1:71) {
-  OL_new[i+10] = OL_new[i+10]/sd_OL[i]
-}
-
 # Log Transformation
 BA_log = BA_new
 CL_log = CL_new
@@ -138,6 +105,39 @@ for(i in 1:183) {
 for(i in 1:71) {
   OL_log[i+10] = log10(OL_new[i+10])
 }
+# Divide variables by the sd of control groups
+BA_c = BA_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+CL_c = CL_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+PM_c = PM_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+OL_c = OL_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+sd_BA = sapply(BA_c[11:266], function(x) sd(x))
+sd_CL = sapply(CL_c[11:491], function(x) sd(x))
+sd_PM = sapply(PM_c[11:193], function(x) sd(x))
+sd_OL = sapply(OL_c[11:81], function(x) sd(x))
+
+# Divide the standard deviation
+for(i in 1:256) {
+  BA_log[i+10] = BA_log[i+10]/sd_BA[i]
+}
+for(i in 1:481) {
+  CL_log[i+10] = CL_log[i+10]/sd_CL[i]
+}
+for(i in 1:183) {
+  PM_log[i+10] = PM_log[i+10]/sd_PM[i]
+}
+for(i in 1:71) {
+  OL_log[i+10] = OL_log[i+10]/sd_OL[i]
+}
+
+
 ```
 
 ## Classification Methods
