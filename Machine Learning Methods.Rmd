@@ -85,7 +85,6 @@ OL_new = OL_new[-c(159, 160, 123, 124, 29, 30, 85, 86),]
 ## Scaling and Transformation
 ```{r scaling and transformation}
 # Base 10 log transformation
-# Log Transformation
 BA_log = BA_new
 CL_log = CL_new
 PM_log = PM_new
@@ -136,8 +135,6 @@ for(i in 1:183) {
 for(i in 1:71) {
   OL_log[i+10] = OL_log[i+10]/sd_OL[i]
 }
-
-
 ```
 
 ## Classification Methods
