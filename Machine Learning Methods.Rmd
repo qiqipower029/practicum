@@ -73,8 +73,19 @@ OL_info = OL[1:10]
 OL_new = cbind.data.frame(OL_info, OL_data)
 ```
 
+## Delete outliers
+```{r outliers}
+# Delete outliers identified in PCA
+CL_new = CL_new[-c(39, 40, 55, 56, 121, 122, 199, 200),]
+BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
+PM_new = PM_new[-c(31, 32),]
+OL_new = OL_new[-c(159, 160, 123, 124, 29, 30, 85, 86),]
+```
+
 ## Scaling and Transformation
 ```{r scaling and transformation}
+# Base 10 log transformation
+
 # Divide variables by the sd of control groups
 BA_c = BA_new %>% 
   group_by(Strata) %>% 
