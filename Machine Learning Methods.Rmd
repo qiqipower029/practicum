@@ -180,7 +180,7 @@ plot(roc.glm, legacy.axes = T)
 ```{r LASSO for CL data}
 # Lasso regression
 set.seed(1029)
-
+CL_analysis$PROT_ASD_2015 = as.factor(CL_analysis$PROT_ASD_2015)
 # Set outcome and features
 x_CL = model.matrix(CL_analysis$PROT_ASD_2015~., CL_analysis)[rowTrain, -1]
 y_CL = CL_analysis$PROT_ASD_2015[rowTrain]
