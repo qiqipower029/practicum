@@ -1,0 +1,143 @@
+---
+title: "Variable Importance"
+author: "Jieqi Tu (jt3098)"
+date: "3/1/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(caret)
+library(glmnet)
+library(pROC)
+```
+
+## Import dataset
+```{r import dataset}
+# Import dataset
+CL = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_CL data_15Jan2020.xlsx") 
+BA = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_BA data_15Jan2020.xlsx") 
+PM = readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_PM data_15Jan2020.xlsx") 
+OL =  readxl::read_excel("./data_new/ABC_Cord Blood_Metabolomics_OL data_15Jan2020.xlsx")
+```
+
+
+## Convert 0 to half of the minimum values
+```{r convert 0 to half of the minimum values}
+CL_data = CL[11:491]
+BA_data = BA[11:266]
+PM_data = PM[11:193]
+OL_data = OL[11:81]
+CL_data[CL_data == 0] = NA
+BA_data[BA_data == 0] = NA
+PM_data[PM_data == 0] = NA
+OL_data[OL_data == 0] = NA
+CL_min = sapply(CL_data[1:481], function(x) min(x, na.rm = T))
+BA_min = sapply(BA_data[1:256], function(x) min(x, na.rm = T))
+PM_min = sapply(PM_data[1:183], function(x) min(x, na.rm = T))
+OL_min = sapply(OL_data[1:71], function(x) min(x, na.rm = T))
+
+CL_data = CL[11:491]
+BA_data = BA[11:266]
+PM_data = PM[11:193]
+OL_data = OL[11:81]
+# Convert 0 to half of the minimum value
+for(i in 1:481) {
+  CL_data[i][CL_data[i]==0] = 0.5*CL_min[i]
+}
+
+for(i in 1:256) {
+  BA_data[i][BA_data[i]==0] = 0.5*BA_min[i]
+}
+
+for(i in 1:183) {
+  PM_data[i][PM_data[i]==0] = 0.5*PM_min[i]
+}
+
+for(i in 1:71) {
+  OL_data[i][OL_data[i]==0] = 0.5*OL_min[i]
+}
+
+CL_info = CL[1:10]
+CL_new = cbind.data.frame(CL_info, CL_data)
+
+BA_info = BA[1:10]
+BA_new = cbind.data.frame(BA_info, BA_data)
+
+PM_info = PM[1:10]
+PM_new = cbind.data.frame(PM_info, PM_data)
+
+OL_info = OL[1:10]
+OL_new = cbind.data.frame(OL_info, OL_data)
+```
+
+## Delete outliers
+```{r outliers}
+# Delete outliers identified in PCA
+CL_new = CL_new[-c(39, 40, 55, 56, 121, 122, 199, 200),]
+BA_new = BA_new[-c(5,6,41, 42, 191, 192, 121, 122, 125, 126, 195, 196, 199, 200),]
+PM_new = PM_new[-c(31, 32),]
+OL_new = OL_new[-c(159, 160, 123, 124, 29, 30, 85, 86),]
+```
+
+## Scaling and Transformation
+```{r scaling and transformation}
+# Base 10 log transformation
+BA_log = BA_new
+CL_log = CL_new
+PM_log = PM_new
+OL_log = OL_new
+for(i in 1:256) {
+  BA_log[i+10] = log10(BA_new[i+10])
+}
+
+for(i in 1:481) {
+  CL_log[i+10] = log10(CL_new[i+10])
+}
+
+for(i in 1:183) {
+  PM_log[i+10] = log10(PM_new[i+10])
+}
+
+for(i in 1:71) {
+  OL_log[i+10] = log10(OL_new[i+10])
+}
+# Divide variables by the sd of control groups
+BA_c = BA_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+CL_c = CL_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+PM_c = PM_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+OL_c = OL_log %>% 
+  group_by(Strata) %>% 
+  filter(PROT_ASD_2015 == 0)
+sd_BA = sapply(BA_c[11:266], function(x) sd(x))
+sd_CL = sapply(CL_c[11:491], function(x) sd(x))
+sd_PM = sapply(PM_c[11:193], function(x) sd(x))
+sd_OL = sapply(OL_c[11:81], function(x) sd(x))
+
+# Divide the standard deviation
+for(i in 1:256) {
+  BA_log[i+10] = BA_log[i+10]/sd_BA[i]
+}
+for(i in 1:481) {
+  CL_log[i+10] = CL_log[i+10]/sd_CL[i]
+}
+for(i in 1:183) {
+  PM_log[i+10] = PM_log[i+10]/sd_PM[i]
+}
+for(i in 1:71) {
+  OL_log[i+10] = OL_log[i+10]/sd_OL[i]
+}
+```
+
+### LASSO
+```{r}
+
+```
+
