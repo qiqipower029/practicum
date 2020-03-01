@@ -134,10 +134,18 @@ for(i in 1:183) {
 for(i in 1:71) {
   OL_log[i+10] = OL_log[i+10]/sd_OL[i]
 }
+
+# Delete the matching variables
+CL_analysis = CL_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
+BA_analysis = BA_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
+PM_analysis = PM_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
+OL_analysis = OL_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
 ```
 
 ### LASSO
-```{r}
-
+```{r lasso}
+set.seed(1029)
+sample1 = sample = sample_frac(CL_log, 0.8, replace = F)
+sample2 = sample = sample_frac(CL_log, 0.8, replace = F)
 ```
 
