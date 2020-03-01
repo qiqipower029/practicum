@@ -141,11 +141,27 @@ BA_analysis = BA_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)]
 PM_analysis = PM_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
 OL_analysis = OL_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
 ```
+### Inititial setting
+```{r control setting}
+# Control setting
+ctrl = trainControl(method = "cv",
+                    summaryFunction = twoClassSummary,
+                    classProbs = TRUE)
+```
 
 ### LASSO
 ```{r lasso}
 set.seed(1029)
-sample1 = sample = sample_frac(CL_log, 0.8, replace = F)
-sample2 = sample = sample_frac(CL_log, 0.8, replace = F)
+
+variable_n = data.frame(matrix(ncol = 2, nrow = 0))
+colnames(variable_n) = c("variable_names", "numbers")
+
+for(i in 1:1000) {
+rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
+                               p = 0.8,
+                               list = FALSE)
+
+
+}
 ```
 
