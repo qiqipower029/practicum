@@ -185,5 +185,32 @@ for (k in 2:482) {
   variable_lasso$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso$numbers[k-1]+1, variable_lasso$numbers[k-1])
 }
 }
+
+sort_lasso = variable_lasso[order(-variable_lasso$numbers),] 
+```
+
+### Random Forest
+```{r random forest}
+set.seed(1029)
+rf.grid = expand.grid(mtry = 1:160,
+                      splitrule = "gini",
+                      min.node.size = 5)
+rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
+                               p = 0.8,
+                               list = FALSE)
+
+sample_train = sample_frac(CL_analysis, 0.8, replace = F)
+
+model.rf = ranger(PROT_ASD_2015~., data = CL_analysis[rowTrain,],
+                 mtry = 3,
+                 splitrule = "gini",
+                 min.node.size = 2,
+                 importance = "permutation",
+                 scale.permutation.importance = T)
+
+# Variable importance
+barplot(sort(ranger::importance(model.rf), decreasing = FALSE),
+        las = 2, horiz = T, cex.names = 0.7,
+        col = colorRampPalette(colors = c("cyan", "blue"))(8))
 ```
 
