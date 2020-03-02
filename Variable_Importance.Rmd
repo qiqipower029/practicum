@@ -3,6 +3,8 @@ title: "Variable Importance"
 author: "Jieqi Tu (jt3098)"
 date: "3/1/2020"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -140,6 +142,11 @@ CL_analysis = CL_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)]
 BA_analysis = BA_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
 PM_analysis = PM_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
 OL_analysis = OL_log[,-c(1, 2, 3, 4, 5, 6, 7, 8, 10)] 
+
+CL_analysis$PROT_ASD_2015 = ifelse(CL_analysis$PROT_ASD_2015 == "1", "Positive", "Negative")
+BA_analysis$PROT_ASD_2015 = ifelse(BA_analysis$PROT_ASD_2015 == "1", "Positive", "Negative")
+PM_analysis$PROT_ASD_2015 = ifelse(PM_analysis$PROT_ASD_2015 == "1", "Positive", "Negative")
+OL_analysis$PROT_ASD_2015 = ifelse(OL_analysis$PROT_ASD_2015 == "1", "Positive", "Negative")
 ```
 ### Inititial setting
 ```{r control setting}
@@ -153,15 +160,30 @@ ctrl = trainControl(method = "cv",
 ```{r lasso}
 set.seed(1029)
 
-variable_n = data.frame(matrix(ncol = 2, nrow = 0))
-colnames(variable_n) = c("variable_names", "numbers")
+variable_lasso = data.frame(matrix(ncol = 2, nrow = 481))
+colnames(variable_lasso) = c("variable_names", "numbers")
+variable = colnames(CL_analysis)
+variable_lasso$variable_names = variable[2:482]
+variable_lasso$numbers = 0
 
 for(i in 1:1000) {
 rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
                                p = 0.8,
                                list = FALSE)
 
+model.lasso = train(x = CL_analysis[rowTrain, 2:482],
+                    y = CL_analysis$PROT_ASD_2015[rowTrain],
+                    method = "glmnet",
+                    tuneGrid = expand.grid(alpha = 1,
+                                           lambda = exp(seq(-5, -1, length = 1000))),
+                    metric = "ROC",
+                    family = "binomial",
+                    trControl = ctrl)
 
+coefficients = coef(model.lasso$finalModel, model.lasso$bestTune$lambda)
+for (k in 2:482) {
+  variable_lasso$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso$numbers[k-1]+1, variable_lasso$numbers[k-1])
+}
 }
 ```
 
