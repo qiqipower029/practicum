@@ -191,6 +191,7 @@ sort_lasso = variable_lasso[order(-variable_lasso$numbers),]
 
 ### Random Forest
 ```{r random forest}
+library(ranger)
 set.seed(1029)
 rf.grid = expand.grid(mtry = 1:160,
                       splitrule = "gini",
@@ -199,18 +200,51 @@ rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
                                p = 0.8,
                                list = FALSE)
 
-sample_train = sample_frac(CL_analysis, 0.8, replace = F)
+model.rf = train(PROT_ASD_2015~., data = CL_analysis[rowTrain,],
+                 method = "ranger",
+                 tuneGrid = rf.grid,
+                 metric = "ROC",
+                 trControl = ctrl,
+                 importance = "impurity")
 
-model.rf = ranger(PROT_ASD_2015~., data = CL_analysis[rowTrain,],
-                 mtry = 3,
-                 splitrule = "gini",
-                 min.node.size = 2,
-                 importance = "permutation",
-                 scale.permutation.importance = T)
+model.rf = ranger(PROT_ASD_2015~., data = sample_train,
+                  mtry = 1:160,
+                  min.node.size = 3,
+                  splitrule = "gini",
+                  importance = "impurity")
 
 # Variable importance
-barplot(sort(ranger::importance(model.rf), decreasing = FALSE),
+barplot(sort(ranger::importance(model.rf$finalModel), decreasing = FALSE),
         las = 2, horiz = T, cex.names = 0.7,
         col = colorRampPalette(colors = c("cyan", "blue"))(8))
+```
+
+### XGBoost
+```{r XGboost}
+xgboost.grid = expand.grid(eta = 0.1, 
+                           colsample_bytree=c(0.5,0.7),
+                           max_depth=c(3,6),
+                           nrounds=100,
+                           gamma=1,
+                           min_child_weight=2,
+                           subsample = 1)
+
+set.seed(1029)
+
+modelxgboost = train(PROT_ASD_2015~., 
+                     CL_analysis,
+                     subset = rowTrain,
+                     method = "xgbTree",
+                     trControl = ctrl,
+                     tuneGrid = xgboost.grid,
+                     metric = "ROC",
+                     verbose = F,
+                     importance = "impurity")
+
+barplot(sort(ranger::importance(modelxgboost$finalModel), decreasing = FALSE),
+        las = 2, horiz = T, cex.names = 0.7,
+        col = colorRampPalette(colors = c("cyan", "blue"))(8))
+xgb_imp = xgb.importance(feature_names = modelxgboost$finalModel$feature_names,
+               model = modelxgboost$finalModel)
 ```
 
