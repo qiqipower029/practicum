@@ -166,10 +166,25 @@ variable = colnames(CL_analysis)
 variable_lasso$variable_names = variable[2:482]
 variable_lasso$numbers = 0
 
+# Randomly select 76 pairs out of 96 pairs
+pairs = sample(1:96, 76)
+rownum1 = pairs*2
+rownum2 = rownum1 - 1
+trainset = CL_analysis[c(rownum1,rownum2),]
+testset = CL_analysis[-c(rownum1,rownum2),]
+
+# Tune the model for lasso regression
+model.lasso = train(x = trainset[2:482],
+                    y = trainset$PROT_ASD_2015,
+                    method = "glmnet",
+                    tuneGrid = expand.grid(alpha = 1,
+                                           lambda = exp(seq(-5, -1, length = 1000))),
+                    metric = "ROC",
+                    family = "binomial",
+                    trControl = ctrl)
+plot(model.lasso, xTrans = function(x) log(x))
+model.lasso$bestTune
 for(i in 1:1000) {
-rowTrain = createDataPartition(y = CL_analysis$PROT_ASD_2015,
-                               p = 0.8,
-                               list = FALSE)
 
 model.lasso = train(x = CL_analysis[rowTrain, 2:482],
                     y = CL_analysis$PROT_ASD_2015[rowTrain],
