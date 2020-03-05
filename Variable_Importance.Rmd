@@ -275,8 +275,8 @@ barplot(sort(ranger::importance(model.rf$finalModel), decreasing = FALSE),
 ### XGBoost
 ```{r XGboost}
 xgboost.grid = expand.grid(eta = 0.1, 
-                           colsample_bytree = c(0.5, 0.7),
-                           max_depth=c(3,6),
+                           colsample_bytree = c(0.5, 0.7, 0.9),
+                           max_depth=c(3, 6, 9, 12),
                            nrounds=100,
                            gamma=1,
                            min_child_weight=2,
