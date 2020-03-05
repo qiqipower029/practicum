@@ -187,6 +187,36 @@ lasso_tune = train(x = trainset[2:482],
 
 plot(lasso_tune, xTrans = function(x) log(x))
 lasso_tune$bestTune
+
+# Tune XGboost
+set.seed(1029)
+xgboost.grid = expand.grid(eta = 0.1, 
+                           colsample_bytree=c(0.7,0.8, 0.9),
+                           max_depth=c(1,2,3, 4, 5),
+                           nrounds=100,
+                           gamma=1,
+                           min_child_weight=2,
+                           subsample = 1)
+
+
+model.xgboost = train(PROT_ASD_2015~., 
+                     trainset,
+                     method = "xgbTree",
+                     trControl = ctrl,
+                     tuneGrid = xgboost.grid,
+                     metric = "ROC",
+                     verbose = F,
+                     importance = "accuracy")
+
+plot(model.xgboost)
+
+model.xgboost = xgboost(data = as.matrix(train_boot[2:482]),
+                        label = train_boot$PROT_ASD_2015,
+                        nrounds = 100,
+                        verbose = 0,
+                        eta = 0.1,
+                        gamma = 1, metric = "ROC")
+
 for(i in 1:1000) {
 newpairs = sample(1:76, 70, replace = TRUE)
 row1 = newpairs * 2
@@ -245,7 +275,7 @@ barplot(sort(ranger::importance(model.rf$finalModel), decreasing = FALSE),
 ### XGBoost
 ```{r XGboost}
 xgboost.grid = expand.grid(eta = 0.1, 
-                           colsample_bytree=c(0.5,0.7),
+                           colsample_bytree = c(0.5, 0.7),
                            max_depth=c(3,6),
                            nrounds=100,
                            gamma=1,
@@ -254,20 +284,18 @@ xgboost.grid = expand.grid(eta = 0.1,
 
 set.seed(1029)
 
-modelxgboost = train(PROT_ASD_2015~., 
-                     CL_analysis,
-                     subset = rowTrain,
+model.xgboost = train(PROT_ASD_2015~., 
+                     trainset,
                      method = "xgbTree",
                      trControl = ctrl,
                      tuneGrid = xgboost.grid,
-                     metric = "ROC",
                      verbose = F,
-                     importance = "impurity")
+                     metric = "ROC",
+                     importance = "accuracy")
 
-barplot(sort(ranger::importance(modelxgboost$finalModel), decreasing = FALSE),
-        las = 2, horiz = T, cex.names = 0.7,
-        col = colorRampPalette(colors = c("cyan", "blue"))(8))
-xgb_imp = xgb.importance(feature_names = modelxgboost$finalModel$feature_names,
-               model = modelxgboost$finalModel)
+plot(model.xgboost)
+
+xgb_imp = xgb.importance(feature_names = colnames(CL_analysis)[-1],
+               model = model.xgboost$finalModel)
 ```
 
