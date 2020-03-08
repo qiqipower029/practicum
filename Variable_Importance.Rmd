@@ -157,7 +157,7 @@ ctrl = trainControl(method = "cv",
                     classProbs = TRUE)
 ```
 
-### LASSO
+### Variable Importance for LASSO, Random Forest and XGBoost
 ```{r lasso}
 set.seed(2020)
 
@@ -219,6 +219,20 @@ model.xgboost = xgboost(data = as.matrix(trainset[2:482]),
                         gamma = 1, metric = "ROC",
                         max_depth = 1)
 
+# Tune Random Forest 
+set.seed(2020)
+rf.grid = expand.grid(mtry = 1:160,
+                      splitrule = "gini",
+                      min.node.size = 1:10)
+
+model.rf = train(PROT_ASD_2015~., data = trainset,
+                 method = "ranger",
+                 tuneGrid = rf.grid,
+                 metric = "ROC",
+                 trControl = ctrl,
+                 importance = "impurity")
+ggplot(model.rf, highlight = T)
+model.rf$bestTune
 for(i in 1:1000) {
 newpairs = sample(1:76, 70, replace = TRUE)
 row1 = newpairs * 2
