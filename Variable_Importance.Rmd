@@ -13,6 +13,7 @@ library(tidyverse)
 library(caret)
 library(glmnet)
 library(pROC)
+library(xgboost)
 ```
 
 ## Import dataset
@@ -189,10 +190,10 @@ plot(lasso_tune, xTrans = function(x) log(x))
 lasso_tune$bestTune
 
 # Tune XGboost
-set.seed(1029)
+set.seed(2020)
 xgboost.grid = expand.grid(eta = 0.1, 
                            colsample_bytree=c(0.7,0.8, 0.9),
-                           max_depth=c(1,2,3, 4, 5),
+                           max_depth=c(1, 3, 9),
                            nrounds=100,
                            gamma=1,
                            min_child_weight=2,
@@ -210,12 +211,13 @@ model.xgboost = train(PROT_ASD_2015~.,
 
 plot(model.xgboost)
 
-model.xgboost = xgboost(data = as.matrix(train_boot[2:482]),
-                        label = train_boot$PROT_ASD_2015,
+model.xgboost = xgboost(data = as.matrix(trainset[2:482]),
+                        label = trainset$PROT_ASD_2015,
                         nrounds = 100,
                         verbose = 0,
                         eta = 0.1,
-                        gamma = 1, metric = "ROC")
+                        gamma = 1, metric = "ROC",
+                        max_depth = 1)
 
 for(i in 1:1000) {
 newpairs = sample(1:76, 70, replace = TRUE)
