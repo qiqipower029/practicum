@@ -223,14 +223,15 @@ model.xgboost = xgboost(data = as.matrix(trainset[2:482]),
 set.seed(2020)
 rf.grid = expand.grid(mtry = 1:160,
                       splitrule = "gini",
-                      min.node.size = 1:10)
+                      min.node.size = 3)
 
 model.rf = train(PROT_ASD_2015~., data = trainset,
                  method = "ranger",
                  tuneGrid = rf.grid,
                  metric = "ROC",
                  trControl = ctrl,
-                 importance = "impurity")
+                 importance = "permutation",
+                 scale.permutation.importance = T)
 ggplot(model.rf, highlight = T)
 model.rf$bestTune
 for(i in 1:1000) {
