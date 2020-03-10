@@ -14,6 +14,7 @@ library(caret)
 library(glmnet)
 library(pROC)
 library(xgboost)
+library(randomForest)
 ```
 
 ## Import dataset
@@ -253,7 +254,13 @@ for (k in 2:482) {
 }
 
 # Random Forest
-
+model.rf = randomForest(x = train_boot[2:482],
+                        y = train_boot$PROT_ASD_2015,
+                        data = train_boot,
+                        ntree = 1000,
+                        importance = T,
+                        keep.forest = F,
+                        mtry = 64)
 }
 
 sort_lasso = variable_lasso[order(-variable_lasso$numbers),] 
