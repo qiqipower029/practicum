@@ -223,17 +223,17 @@ model.xgboost = xgboost(data = as.matrix(trainset[2:482]),
 set.seed(2020)
 rf.grid = expand.grid(mtry = 1:160,
                       splitrule = "gini",
-                      min.node.size = 3)
+                      min.node.size = 5)
 
-model.rf = train(PROT_ASD_2015~., data = trainset,
+rf_tune  = train(PROT_ASD_2015~., data = trainset,
                  method = "ranger",
                  tuneGrid = rf.grid,
                  metric = "ROC",
                  trControl = ctrl,
                  importance = "permutation",
                  scale.permutation.importance = T)
-ggplot(model.rf, highlight = T)
-model.rf$bestTune
+ggplot(rf_tune, highlight = T)
+rf_tune$bestTune
 for(i in 1:1000) {
 newpairs = sample(1:76, 70, replace = TRUE)
 row1 = newpairs * 2
