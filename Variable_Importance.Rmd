@@ -159,7 +159,7 @@ ctrl = trainControl(method = "cv",
 ```
 
 ### Variable Importance for LASSO, Random Forest and XGBoost
-```{r lasso}
+```{r CL data}
 set.seed(2020)
 
 # Create a dataframe to store the importance measures
