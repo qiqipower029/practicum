@@ -292,3 +292,8 @@ sort_lasso = variable_lasso[order(-variable_lasso$numbers),]
 sort_rf = variable_rf[order(-variable_rf$sum_mean_accuracy),]
 sort_xgb = variable_xgb[order(-unlist(variable_xgb))]
 ```
+
+```{r variable importance for BA data}
+
+```
+
