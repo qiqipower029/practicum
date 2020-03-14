@@ -317,22 +317,22 @@ variable_xgb_BA$sum_gain = 0
 #for(i in 1:481) {
 #  variable_xgb[[i]] = 0
 #}
-
-CL_analysis$PROT_ASD_2015 = factor(CL_analysis$PROT_ASD_2015, levels = c("Negative", "Positive"))
-# Randomly select 76 pairs out of 96 pairs
-pairs = sample(1:96, 76)
+BA_analysis$PROT_ASD_2015 = factor(BA_analysis$PROT_ASD_2015, levels = c("Negative", "Positive"))
+# Randomly select 74 pairs out of 93 pairs
+pairs = sample(1:93, 74)
 rownum1 = pairs*2
 rownum2 = rownum1 - 1
 trainset_BA = BA_analysis[c(rownum1,rownum2),]
 testset_BA = BA_analysis[-c(rownum1,rownum2),]
 
 # Tune the parameter for LASSO regression
-lasso_tune = train(x = trainset[2:482],
-                   y = trainset$PROT_ASD_2015,
+set.seed(2020)
+lasso_tune = train(x = trainset_BA[2:257],
+                   y = trainset_BA$PROT_ASD_2015,
                    method = "glmnet",
                    metric = "ROC",
                    tuneGrid = expand.grid(alpha = 1,
-                                          lambda = exp(seq(-5,-1, length.out = 100))),
+                                          lambda = exp(seq(-8,-2, length.out = 100))),
                    family = "binomial",
                    trControl = ctrl
 )
@@ -344,7 +344,7 @@ lasso_tune$bestTune
 set.seed(2020)
 xgboost.grid = expand.grid(eta = 0.1, 
                            colsample_bytree=c(0.7, 0.8),
-                           max_depth=c(1,2),
+                           max_depth=c(1, 2, 3, 4),
                            nrounds=100,
                            gamma=1,
                            min_child_weight=2,
@@ -352,7 +352,7 @@ xgboost.grid = expand.grid(eta = 0.1,
 
 
 model.xgboost = train(PROT_ASD_2015~., 
-                     trainset,
+                     trainset_BA,
                      method = "xgbTree",
                      trControl = ctrl,
                      tuneGrid = xgboost.grid,
@@ -361,6 +361,21 @@ model.xgboost = train(PROT_ASD_2015~.,
                      importance = "accuracy")
 
 plot(model.xgboost)
+
+model.xgboost = xgboost(data = as.matrix(train_boot[2:257]),
+                        label = train_boot$PROT_ASD_2015,
+                        nrounds = 100,
+                        verbose = 0,
+                        eta = 0.1,
+                        gamma = 1, metric = "ROC",
+                        max_depth = 2,
+                        colsample_bytree = 0.7,
+                        importance = "accuracy")
+xgb_imp = xgb.importance(feature_names = variable[2:257], model = model.xgboost)
+
+for (p in 1:nrow(xgb_imp)) {
+ variable_xgb_BA[xgb_imp[[1]][p]] = variable_xgb_BA[xgb_imp[[1]][p]] + xgb_imp[p,2]
+}
 
 
 # Tune Random Forest 
@@ -381,10 +396,10 @@ rf_tune$bestTune
 
 set.seed(2020)
 for(i in 1:1000) {
-newpairs = sample(1:76, 70, replace = TRUE)
+newpairs = sample(1:74, 68, replace = TRUE)
 row1 = newpairs * 2
 row2 = row1 - 1
-train_boot = trainset[c(row1, row2),]
+train_boot = trainset_BA[c(row1, row2),]
 
 # Lasso
 model.lasso = glmnet(x = as.matrix(train_boot[2:482]),
