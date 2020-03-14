@@ -185,8 +185,146 @@ CL_analysis$PROT_ASD_2015 = factor(CL_analysis$PROT_ASD_2015, levels = c("Negati
 pairs = sample(1:96, 76)
 rownum1 = pairs*2
 rownum2 = rownum1 - 1
-trainset = CL_analysis[c(rownum1,rownum2),]
-testset = CL_analysis[-c(rownum1,rownum2),]
+trainset_CL = CL_analysis[c(rownum1,rownum2),]
+testset_CL = CL_analysis[-c(rownum1,rownum2),]
+
+# Tune the parameter for LASSO regression
+lasso_tune = train(x = trainset_CL[2:482],
+                   y = trainset_CL$PROT_ASD_2015,
+                   method = "glmnet",
+                   metric = "ROC",
+                   tuneGrid = expand.grid(alpha = 1,
+                                          lambda = exp(seq(-5,-1, length.out = 100))),
+                   family = "binomial",
+                   trControl = ctrl
+)
+
+plot(lasso_tune, xTrans = function(x) log(x))
+lasso_tune$bestTune
+
+# Tune XGboost
+set.seed(2020)
+xgboost.grid = expand.grid(eta = 0.1, 
+                           colsample_bytree=c(0.7, 0.8),
+                           max_depth=c(1,2),
+                           nrounds=100,
+                           gamma=1,
+                           min_child_weight=2,
+                           subsample = 1)
+
+
+model.xgboost = train(PROT_ASD_2015~., 
+                     trainset_CL,
+                     method = "xgbTree",
+                     trControl = ctrl,
+                     tuneGrid = xgboost.grid,
+                     metric = "ROC",
+                     verbose = F,
+                     importance = "accuracy")
+
+plot(model.xgboost)
+
+
+# Tune Random Forest 
+set.seed(2020)
+rf.grid = expand.grid(mtry = 1:160,
+                      splitrule = "gini",
+                      min.node.size = 5)
+
+rf_tune  = train(PROT_ASD_2015~., data = trainset_CL,
+                 method = "ranger",
+                 tuneGrid = rf.grid,
+                 metric = "ROC",
+                 trControl = ctrl,
+                 importance = "permutation",
+                 scale.permutation.importance = T)
+ggplot(rf_tune, highlight = T)
+rf_tune$bestTune
+
+set.seed(2020)
+for(i in 1:1000) {
+newpairs = sample(1:76, 70, replace = TRUE)
+row1 = newpairs * 2
+row2 = row1 - 1
+train_boot = trainset_CL[c(row1, row2),]
+
+# Lasso
+model.lasso = glmnet(x = as.matrix(train_boot[2:482]),
+                     y = train_boot$PROT_ASD_2015,
+                     family = "binomial",
+                     alpha = 1,
+                     lambda = 0.02088578)
+
+coefficients = coef(model.lasso)
+for (k in 2:482) {
+  variable_lasso$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso$numbers[k-1]+1, variable_lasso$numbers[k-1])
+}
+
+# Random Forest
+model.rf = randomForest(x = train_boot[2:482],
+                        y = train_boot$PROT_ASD_2015,
+                        data = train_boot,
+                        ntree = 1000,
+                        importance = T,
+                        keep.forest = F,
+                        mtry = 64)
+
+rf_importance = importance(model.rf) %>% as.data.frame()
+variable_rf$sum_mean_accuracy = variable_rf$sum_mean_accuracy + rf_importance$MeanDecreaseAccuracy
+
+# XGBoost
+model.xgboost = xgboost(data = as.matrix(train_boot[2:482]),
+                        label = train_boot$PROT_ASD_2015,
+                        nrounds = 100,
+                        verbose = 0,
+                        eta = 0.1,
+                        gamma = 1, metric = "ROC",
+                        max_depth = 2,
+                        colsample_bytree = 0.7,
+                        importance = "accuracy")
+xgb_imp = xgb.importance(feature_names = variable[2:482], model = model.xgboost)
+for (p in 1:nrow(xgb_imp)) {
+ variable_xgb[xgb_imp[[1]][p]] = variable_xgb[xgb_imp[[1]][p]] + xgb_imp[p,2]
+}
+}
+# Sort the variable importance
+sort_lasso = variable_lasso[order(-variable_lasso$numbers),]
+sort_rf = variable_rf[order(-variable_rf$sum_mean_accuracy),]
+sort_xgb = variable_xgb[order(-unlist(variable_xgb))]
+```
+
+```{r variable importance for BA data}
+set.seed(2020)
+
+# Create a dataframe to store the importance measures
+variable_lasso_BA = data.frame(matrix(ncol = 2, nrow = 256))
+colnames(variable_lasso_BA) = c("variable_names", "numbers")
+variable = colnames(BA_analysis)
+variable_lasso_BA$variable_names = variable[2:257]
+variable_lasso_BA$numbers = 0
+
+variable_rf_BA = data.frame(matrix(ncol = 2, nrow = 256))
+colnames(variable_rf_BA) = c("variable_names", "sum_mean_accuracy")
+variable_rf_BA$variable_names = variable[2:257]
+variable_rf_BA$sum_mean_accuracy = 0
+
+variable_xgb_BA = data.frame(matrix(ncol = 2, nrow = 256))
+colnames(variable_xgb_BA) = c("variable_names", "sum_gain")
+variable_xgb_BA$variable_names = variable[2:257]
+variable_xgb_BA$sum_gain = 0
+#variable_xgb_BA = vector(mode = "list", length = 481)
+#names(variable_xgb) = variable[2:482]
+#for(i in 1:481) {
+#  variable_xgb[[i]] = 0
+#}
+
+CL_analysis$PROT_ASD_2015 = factor(CL_analysis$PROT_ASD_2015, levels = c("Negative", "Positive"))
+# Randomly select 76 pairs out of 96 pairs
+pairs = sample(1:96, 76)
+rownum1 = pairs*2
+rownum2 = rownum1 - 1
+trainset_BA = BA_analysis[c(rownum1,rownum2),]
+testset_BA = BA_analysis[-c(rownum1,rownum2),]
 
 # Tune the parameter for LASSO regression
 lasso_tune = train(x = trainset[2:482],
@@ -291,9 +429,5 @@ for (p in 1:nrow(xgb_imp)) {
 sort_lasso = variable_lasso[order(-variable_lasso$numbers),]
 sort_rf = variable_rf[order(-variable_rf$sum_mean_accuracy),]
 sort_xgb = variable_xgb[order(-unlist(variable_xgb))]
-```
-
-```{r variable importance for BA data}
-
 ```
 
