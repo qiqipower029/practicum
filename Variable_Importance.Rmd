@@ -293,6 +293,10 @@ sort_lasso_CL = variable_lasso[order(-variable_lasso$numbers),]
 sort_rf_CL = variable_rf[order(-variable_rf$sum_mean_accuracy),]
 variable_xgb_CL$sum_gain = as.numeric(variable_xgb_CL$sum_gain)
 sort_xgb_CL = variable_xgb_CL[order(-variable_xgb_CL$sum_gain),]
+
+# Join these three dataframes
+lasso_rf_join = left_join(sort_lasso_CL, sort_rf_CL, by = "variable_names")
+all_imp_CL = left_join(lasso_rf_join, sort_xgb_CL, by = "variable_names")
 ```
 
 ```{r variable importance for BA data}
