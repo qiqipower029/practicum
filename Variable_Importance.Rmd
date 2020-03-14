@@ -457,6 +457,6 @@ for (p in 1:nrow(xgb_imp)) {
 # Sort the variable importance
 sort_lasso = variable_lasso[order(-variable_lasso$numbers),]
 sort_rf = variable_rf[order(-variable_rf$sum_mean_accuracy),]
-sort_xgb = variable_xgb[order(-unlist(variable_xgb))]
+sort_xgb = variable_xgb[order(-variable_xgb))]
 ```
 
