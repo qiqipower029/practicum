@@ -397,7 +397,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:257]),
 
 coefficients = coef(model.lasso)
 for (k in 2:257) {
-  variable_lasso$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso$numbers[k-1]+1, variable_lasso$numbers[k-1])
+  variable_lasso_BA$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_BA$numbers[k-1]+1, variable_lasso$numbers[k-1])
 }
 
 # Random Forest
@@ -410,7 +410,7 @@ model.rf = randomForest(x = train_boot[2:257],
                         mtry = 86)
 
 rf_importance = importance(model.rf) %>% as.data.frame()
-variable_rf$sum_mean_accuracy = variable_rf$sum_mean_accuracy + rf_importance$MeanDecreaseAccuracy
+variable_rf_BA$sum_mean_accuracy = variable_rf_BA$sum_mean_accuracy + rf_importance$MeanDecreaseAccuracy
 
 # XGBoost
 model.xgboost = xgboost(data = as.matrix(train_boot[2:257]),
