@@ -396,7 +396,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:257]),
                      lambda = 0.03160167)
 
 coefficients = coef(model.lasso)
-for (k in 2:482) {
+for (k in 2:257) {
   variable_lasso$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso$numbers[k-1]+1, variable_lasso$numbers[k-1])
 }
 
