@@ -300,7 +300,7 @@ all_imp_CL = left_join(lasso_rf_join, sort_xgb_CL, by = "variable_names")
 ```
 
 ```{r variable importance for BA data}
-set.seed(2020)
+set.seed(1029)
 
 # Create a dataframe to store the importance measures
 variable_lasso_BA = data.frame(matrix(ncol = 2, nrow = 256))
@@ -321,7 +321,7 @@ variable_xgb_BA$sum_gain = 0
 
 BA_analysis$PROT_ASD_2015 = factor(BA_analysis$PROT_ASD_2015, levels = c("Negative", "Positive"))
 # Randomly select 74 pairs out of 93 pairs
-set.seed(2020)
+set.seed(1029)
 pairs = sample(1:93, 74)
 rownum1 = pairs*2
 rownum2 = rownum1 - 1
@@ -329,7 +329,7 @@ trainset_BA = BA_analysis[c(rownum1,rownum2),]
 testset_BA = BA_analysis[-c(rownum1,rownum2),]
 
 # Tune the parameter for LASSO regression
-set.seed(2020)
+set.seed(1029)
 lasso_tune = train(x = trainset_BA[2:257],
                    y = trainset_BA$PROT_ASD_2015,
                    method = "glmnet",
@@ -344,9 +344,9 @@ plot(lasso_tune, xTrans = function(x) log(x))
 lasso_tune$bestTune
 
 # Tune XGboost
-set.seed(2020)
+set.seed(1029)
 xgboost.grid = expand.grid(eta = 0.1, 
-                           colsample_bytree=c(0.7, 0.8),
+                           colsample_bytree=c(0.6, 0.7, 0.8),
                            max_depth=c(1, 2, 3, 4),
                            nrounds=100,
                            gamma=1,
@@ -366,7 +366,7 @@ model.xgboost = train(PROT_ASD_2015~.,
 plot(model.xgboost)
 
 # Tune Random Forest 
-set.seed(2020)
+set.seed(1029)
 rf.grid = expand.grid(mtry = 1:86,
                       splitrule = "gini",
                       min.node.size = 5)
@@ -381,7 +381,7 @@ rf_tune  = train(PROT_ASD_2015~., data = trainset_BA,
 ggplot(rf_tune, highlight = T)
 rf_tune$bestTune
 
-set.seed(2020)
+set.seed(1029)
 for(i in 1:1000) {
 newpairs = sample(1:74, 68, replace = TRUE)
 row1 = newpairs * 2
@@ -393,7 +393,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:257]),
                      y = train_boot$PROT_ASD_2015,
                      family = "binomial",
                      alpha = 1,
-                     lambda = 0.0316)
+                     lambda = 0.09995549)
 
 coefficients = coef(model.lasso)
 for (k in 2:257) {
@@ -407,7 +407,7 @@ model.rf = randomForest(x = train_boot[2:257],
                         ntree = 1000,
                         importance = T,
                         keep.forest = F,
-                        mtry = 86)
+                        mtry = 82)
 
 rf_importance = importance(model.rf) %>% as.data.frame()
 variable_rf_BA$sum_mean_accuracy = variable_rf_BA$sum_mean_accuracy + rf_importance$MeanDecreaseAccuracy
@@ -419,7 +419,7 @@ model.xgboost = xgboost(data = as.matrix(train_boot[2:257]),
                         verbose = 0,
                         eta = 0.1,
                         gamma = 1, metric = "ROC",
-                        max_depth = 2,
+                        max_depth = 1,
                         colsample_bytree = 0.7,
                         importance = "accuracy")
 xgb_imp = xgb.importance(feature_names = variable[2:257], model = model.xgboost)
