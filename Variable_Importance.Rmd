@@ -433,7 +433,7 @@ for (p in 1:nrow(xgb_imp)) {
 sort_lasso_BA = variable_lasso[order(-variable_lasso$numbers),]
 sort_rf_BA = variable_rf[order(-variable_rf$sum_mean_accuracy),]
 variable_xgb_BA$sum_gain = as.numeric(variable_xgb_BA$sum_gain)
-sort_xgb_BA = variable_xgb[order(-variable_xgb),]
+sort_xgb_BA = variable_xgb_BA[order(-variable_xgb_BA$sum_gain),]
 
 # Join all the variable importance
 # Join these three dataframes
