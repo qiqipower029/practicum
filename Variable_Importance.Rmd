@@ -160,7 +160,7 @@ ctrl = trainControl(method = "cv",
 
 ### Variable Importance for LASSO, Random Forest and XGBoost
 ```{r CL data}
-set.seed(2020)
+set.seed(1029)
 
 # Create a dataframe to store the importance measures
 variable_lasso = data.frame(matrix(ncol = 2, nrow = 481))
@@ -188,12 +188,13 @@ trainset_CL = CL_analysis[c(rownum1,rownum2),]
 testset_CL = CL_analysis[-c(rownum1,rownum2),]
 
 # Tune the parameter for LASSO regression
+set.seed(1029)
 lasso_tune = train(x = trainset_CL[2:482],
                    y = trainset_CL$PROT_ASD_2015,
                    method = "glmnet",
                    metric = "ROC",
                    tuneGrid = expand.grid(alpha = 1,
-                                          lambda = exp(seq(-5,-1, length.out = 100))),
+                                          lambda = exp(seq(-10,-1, length.out = 100))),
                    family = "binomial",
                    trControl = ctrl
 )
@@ -202,10 +203,10 @@ plot(lasso_tune, xTrans = function(x) log(x))
 lasso_tune$bestTune
 
 # Tune XGboost
-set.seed(2020)
+set.seed(1029)
 xgboost.grid = expand.grid(eta = 0.1, 
-                           colsample_bytree=c(0.7, 0.8),
-                           max_depth=c(1,2),
+                           colsample_bytree=c(0.6, 0.7, 0.8),
+                           max_depth=c(1,2,3),
                            nrounds=100,
                            gamma=1,
                            min_child_weight=2,
@@ -225,7 +226,7 @@ plot(model.xgboost)
 
 
 # Tune Random Forest 
-set.seed(2020)
+set.seed(1029)
 rf.grid = expand.grid(mtry = 1:160,
                       splitrule = "gini",
                       min.node.size = 5)
@@ -240,7 +241,7 @@ rf_tune  = train(PROT_ASD_2015~., data = trainset_CL,
 ggplot(rf_tune, highlight = T)
 rf_tune$bestTune
 
-set.seed(2020)
+set.seed(1029)
 for(i in 1:1000) {
 newpairs = sample(1:76, 70, replace = TRUE)
 row1 = newpairs * 2
@@ -252,7 +253,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:482]),
                      y = train_boot$PROT_ASD_2015,
                      family = "binomial",
                      alpha = 1,
-                     lambda = 0.02088578)
+                     lambda = 0.3678794)
 
 coefficients = coef(model.lasso)
 for (k in 2:482) {
@@ -279,7 +280,7 @@ model.xgboost = xgboost(data = as.matrix(train_boot[2:482]),
                         eta = 0.1,
                         gamma = 1, metric = "ROC",
                         max_depth = 2,
-                        colsample_bytree = 0.7,
+                        colsample_bytree = 0.6,
                         importance = "accuracy")
 xgb_imp = xgb.importance(feature_names = variable[2:482], model = model.xgboost)
 
