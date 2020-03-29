@@ -398,7 +398,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:257]),
 
 coefficients = coef(model.lasso)
 for (k in 2:257) {
-  variable_lasso_BA$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_BA$numbers[k-1]+1, variable_lasso$numbers[k-1])
+  variable_lasso_BA$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_BA$numbers[k-1]+1, variable_lasso_BA$numbers[k-1])
 }
 
 # Random Forest
@@ -540,7 +540,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:184]),
 
 coefficients = coef(model.lasso)
 for (k in 2:184) {
-  variable_lasso_PM$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_PM$numbers[k-1]+1, variable_lasso$numbers[k-1])
+  variable_lasso_PM$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_PM$numbers[k-1]+1, variable_lasso_PM$numbers[k-1])
 }
 
 # Random Forest
@@ -588,39 +588,39 @@ all_imp_PM = left_join(lasso_rf_join, sort_xgb_PM, by = "variable_names")
 set.seed(1029)
 
 # Create a dataframe to store the importance measures
-variable_lasso_OL = data.frame(matrix(ncol = 2, nrow = 183))
-colnames(variable_lasso_PM) = c("variable_names", "numbers")
-variable = colnames(PM_analysis)
-variable_lasso_PM$variable_names = variable[2:184]
-variable_lasso_PM$numbers = 0
+variable_lasso_OL = data.frame(matrix(ncol = 2, nrow = 71))
+colnames(variable_lasso_OL) = c("variable_names", "numbers")
+variable = colnames(OL_analysis)
+variable_lasso_OL$variable_names = variable[2:72]
+variable_lasso_OL$numbers = 0
 
-variable_rf_PM = data.frame(matrix(ncol = 2, nrow = 183))
-colnames(variable_rf_PM) = c("variable_names", "sum_mean_accuracy")
-variable_rf_PM$variable_names = variable[2:184]
-variable_rf_PM$sum_mean_accuracy = 0
+variable_rf_OL = data.frame(matrix(ncol = 2, nrow = 71))
+colnames(variable_rf_OL) = c("variable_names", "sum_mean_accuracy")
+variable_rf_OL$variable_names = variable[2:72]
+variable_rf_OL$sum_mean_accuracy = 0
 
-variable_xgb_PM = data.frame(matrix(ncol = 2, nrow = 183))
-colnames(variable_xgb_PM) = c("variable_names", "sum_gain")
-variable_xgb_PM$variable_names = variable[2:184]
-variable_xgb_PM$sum_gain = 0
+variable_xgb_OL = data.frame(matrix(ncol = 2, nrow = 71))
+colnames(variable_xgb_OL) = c("variable_names", "sum_gain")
+variable_xgb_OL$variable_names = variable[2:72]
+variable_xgb_OL$sum_gain = 0
 
-PM_analysis$PROT_ASD_2015 = factor(PM_analysis$PROT_ASD_2015, levels = c("Negative", "Positive"))
-# Randomly select 77 pairs out of 97 pairs
+OL_analysis$PROT_ASD_2015 = factor(OL_analysis$PROT_ASD_2015, levels = c("Negative", "Positive"))
+# Randomly select 76 pairs out of 96 pairs
 set.seed(1029)
-pairs = sample(1:97, 77)
+pairs = sample(1:96, 76)
 rownum1 = pairs*2
 rownum2 = rownum1 - 1
-trainset_PM = PM_analysis[c(rownum1,rownum2),]
-testset_PM = PM_analysis[-c(rownum1,rownum2),]
+trainset_OL = PM_analysis[c(rownum1,rownum2),]
+testset_OL = PM_analysis[-c(rownum1,rownum2),]
 
 # Tune the parameter for LASSO regression
 set.seed(1029)
-lasso_tune = train(x = trainset_PM[2:184],
-                   y = trainset_PM$PROT_ASD_2015,
+lasso_tune = train(x = trainset_OL[2:72],
+                   y = trainset_OL$PROT_ASD_2015,
                    method = "glmnet",
                    metric = "ROC",
                    tuneGrid = expand.grid(alpha = 1,
-                                          lambda = exp(seq(-8,-2, length.out = 100))),
+                                          lambda = exp(seq(-10,-2, length.out = 100))),
                    family = "binomial",
                    trControl = ctrl
 )
@@ -632,7 +632,7 @@ lasso_tune$bestTune
 set.seed(1029)
 xgboost.grid = expand.grid(eta = 0.1, 
                            colsample_bytree=c(0.6, 0.7, 0.8),
-                           max_depth=c(1, 2, 3, 4),
+                           max_depth=c(1, 2, 3, 4, 5, 6),
                            nrounds=100,
                            gamma=1,
                            min_child_weight=2,
@@ -640,7 +640,7 @@ xgboost.grid = expand.grid(eta = 0.1,
 
 
 model.xgboost = train(PROT_ASD_2015~., 
-                     trainset_BA,
+                     trainset_OL,
                      method = "xgbTree",
                      trControl = ctrl,
                      tuneGrid = xgboost.grid,
@@ -652,11 +652,11 @@ plot(model.xgboost)
 
 # Tune Random Forest 
 set.seed(1029)
-rf.grid = expand.grid(mtry = 1:61,
+rf.grid = expand.grid(mtry = 1:24,
                       splitrule = "gini",
-                      min.node.size = 5)
+                      min.node.size = 1:5)
 
-rf_tune  = train(PROT_ASD_2015~., data = trainset_PM,
+rf_tune  = train(PROT_ASD_2015~., data = trainset_OL,
                  method = "ranger",
                  tuneGrid = rf.grid,
                  metric = "ROC",
@@ -674,31 +674,31 @@ row2 = row1 - 1
 train_boot = trainset_PM[c(row1, row2),]
 
 # Lasso
-model.lasso = glmnet(x = as.matrix(train_boot[2:184]),
+model.lasso = glmnet(x = as.matrix(train_boot[2:72]),
                      y = train_boot$PROT_ASD_2015,
                      family = "binomial",
                      alpha = 1,
-                     lambda = 0.02)
+                     lambda = 0.03)
 
 coefficients = coef(model.lasso)
-for (k in 2:184) {
-  variable_lasso_PM$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_PM$numbers[k-1]+1, variable_lasso$numbers[k-1])
+for (k in 2:72) {
+  variable_lasso_OL$numbers[k-1] = ifelse(coefficients[k,] != "0", variable_lasso_OL$numbers[k-1]+1, variable_lasso_OL$numbers[k-1])
 }
 
 # Random Forest
-model.rf = randomForest(x = train_boot[2:184],
+model.rf = randomForest(x = train_boot[2:72],
                         y = train_boot$PROT_ASD_2015,
                         data = train_boot,
                         ntree = 1000,
                         importance = T,
                         keep.forest = F,
-                        mtry = 4)
+                        mtry = 13)
 
 rf_importance = importance(model.rf) %>% as.data.frame()
-variable_rf_PM$sum_mean_accuracy = variable_rf_PM$sum_mean_accuracy + rf_importance$MeanDecreaseAccuracy
+variable_rf_OL$sum_mean_accuracy = variable_rf_OL$sum_mean_accuracy + rf_importance$MeanDecreaseAccuracy
 
 # XGBoost
-model.xgboost = xgboost(data = as.matrix(train_boot[2:184]),
+model.xgboost = xgboost(data = as.matrix(train_boot[2:72]),
                         label = train_boot$PROT_ASD_2015,
                         nrounds = 100,
                         verbose = 0,
@@ -707,11 +707,11 @@ model.xgboost = xgboost(data = as.matrix(train_boot[2:184]),
                         max_depth = 1,
                         colsample_bytree = 0.7,
                         importance = "accuracy")
-xgb_imp = xgb.importance(feature_names = variable[2:184], model = model.xgboost)
+xgb_imp = xgb.importance(feature_names = variable[2:72], model = model.xgboost)
 
 for (p in 1:nrow(xgb_imp)) {
  name = xgb_imp[[1]][p]
- variable_xgb_PM[variable_xgb_PM$variable_names == name,][[2]] = variable_xgb_PM[variable_xgb_PM$variable_names == name,][[2]] + xgb_imp[p,2]
+ variable_xgb_OL[variable_xgb_OL$variable_names == name,][[2]] = variable_xgb_OL[variable_xgb_OL$variable_names == name,][[2]] + xgb_imp[p,2]
 }
 }
 # Sort the variable importance
