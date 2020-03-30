@@ -715,14 +715,14 @@ for (p in 1:nrow(xgb_imp)) {
 }
 }
 # Sort the variable importance
-sort_lasso_PM = variable_lasso_PM[order(-variable_lasso_PM$numbers),]
-sort_rf_PM = variable_rf_PM[order(-variable_rf_PM$sum_mean_accuracy),]
-variable_xgb_PM$sum_gain = as.numeric(variable_xgb_PM$sum_gain)
-sort_xgb_PM = variable_xgb_PM[order(-variable_xgb_PM$sum_gain),]
+sort_lasso_OL = variable_lasso_OL[order(-variable_lasso_OL$numbers),]
+sort_rf_OL = variable_rf_OL[order(-variable_rf_OL$sum_mean_accuracy),]
+variable_xgb_OL$sum_gain = as.numeric(variable_xgb_OL$sum_gain)
+sort_xgb_OL = variable_xgb_OL[order(-variable_xgb_OL$sum_gain),]
 
 # Join all the variable importance
 # Join these three dataframes
-lasso_rf_join = left_join(sort_lasso_PM, sort_rf_PM, by = "variable_names")
-all_imp_PM = left_join(lasso_rf_join, sort_xgb_PM, by = "variable_names")
+lasso_rf_join = left_join(sort_lasso_OL, sort_rf_OL, by = "variable_names")
+all_imp_OL = left_join(lasso_rf_join, sort_xgb_OL, by = "variable_names")
 ```
 
