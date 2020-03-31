@@ -253,7 +253,7 @@ model.lasso = glmnet(x = as.matrix(train_boot[2:482]),
                      y = train_boot$PROT_ASD_2015,
                      family = "binomial",
                      alpha = 1,
-                     lambda = 0.3678794)
+                     lambda = 0.02)
 
 coefficients = coef(model.lasso)
 for (k in 2:482) {
