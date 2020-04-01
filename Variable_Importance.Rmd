@@ -864,3 +864,71 @@ modelNames = c("LASSO", "Random Forest", "XGBoost")
 legend("bottomright", legend = paste0(modelNames, ": ", round(auc_BA, 3)), col = 1:3, lwd = 2)
 ```
 
+```{r test performance PM}
+# CL data
+test_new_data_PM = 
+  testset_PM %>% 
+  select(PROT_ASD_2015, levoglucosan, `1-monostearin`, `oxamic acid`, lactose, uridine, `3,6-anhydro-D-galactose`, `N-acetylornithine`, `quinic acid`, `glutaric acid`, `1-hexadecanol`, `kynurenic acid`, `glucose-1-phosphate`)
+
+train_new_data_PM = 
+  trainset_PM %>% 
+  select(PROT_ASD_2015, levoglucosan, `1-monostearin`, `oxamic acid`, lactose, uridine, `3,6-anhydro-D-galactose`, `N-acetylornithine`, `quinic acid`, `glutaric acid`, `1-hexadecanol`, `kynurenic acid`, `glucose-1-phosphate`)
+
+# Caret
+# Lasso
+set.seed(1029)
+model.lasso_PM = train(x = train_new_data_PM[2:12],
+                       y = train_new_data_PM$PROT_ASD_2015,
+                       method = "glmnet",
+                       metric = "ROC",
+                       tuneGrid = expand.grid(alpha = 1,
+                       lambda = exp(seq(-10,-1, length.out = 100))),
+                       family = "binomial",
+                       trControl = ctrl)
+
+plot(model.lasso_PM, xTrans = function(x) log(x))
+model.lasso_PM$bestTune
+
+# XGBoost
+set.seed(1029)
+model.xgboost_PM = train(PROT_ASD_2015~., 
+                         train_new_data_PM,
+                         method = "xgbTree",
+                         trControl = ctrl,
+                         tuneGrid = xgboost.grid,
+                         metric = "ROC",
+                         verbose = F,
+                         importance = "accuracy")
+plot(model.xgboost_PM)
+
+# Random Forest
+set.seed(1029)
+rf.grid = expand.grid(mtry = 2,
+                      splitrule = "gini",
+                      min.node.size = 1:5)
+model.rf_PM  = train(PROT_ASD_2015~., data = train_new_data_PM,
+                     method = "ranger",
+                     tuneGrid = rf.grid,
+                     metric = "ROC",
+                     trControl = ctrl)
+
+ggplot(model.rf_PM, highlight = T)
+model.rf_PM$bestTune
+
+# ROC plot and AUC calculation
+lasso_pred_PM = predict(model.lasso_PM, newdata = test_new_data_PM, type = "prob")[,2]
+rf_pred_PM = predict(model.rf_PM, newdata = test_new_data_PM, type = "prob")[,2]
+xgb_pred_PM = predict(model.xgboost_PM, newdata = test_new_data_PM, type = "prob")[,2]
+
+roc.lasso_PM = roc(test_new_data_PM$PROT_ASD_2015, lasso_pred_PM)
+roc.rf_PM = roc(test_new_data_PM$PROT_ASD_2015, rf_pred_PM)
+roc.xgb_PM = roc(test_new_data_PM$PROT_ASD_2015, xgb_pred_PM)
+
+auc_PM = c(roc.lasso_BA$auc[1], roc.rf_BA$auc[1], roc.xgb_BA$auc[1])
+
+plot(roc.lasso_PM, legacy.axes = T)
+plot(roc.rf_PM, col = 2, add = T)
+plot(roc.xgb_PM, col = 3, add = T)
+modelNames = c("LASSO", "Random Forest", "XGBoost")
+legend("bottomright", legend = paste0(modelNames, ": ", round(auc_PM, 3)), col = 1:3, lwd = 2)
+```
