@@ -726,3 +726,7 @@ lasso_rf_join = left_join(sort_lasso_OL, sort_rf_OL, by = "variable_names")
 all_imp_OL = left_join(lasso_rf_join, sort_xgb_OL, by = "variable_names")
 ```
 
+```{r new model performance on testsets}
+# CL data
+```
+
