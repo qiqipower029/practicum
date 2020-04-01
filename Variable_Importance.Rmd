@@ -728,5 +728,17 @@ all_imp_OL = left_join(lasso_rf_join, sort_xgb_OL, by = "variable_names")
 
 ```{r new model performance on testsets}
 # CL data
+test_new_data_CL = 
+  testset_CL %>% 
+  select(PROT_ASD_2015, `TAG(59:2)`, `DG(34:3)`, `PC(40:7) A`, `TAG(54:3)`, `SM (d40:2) B`, `FA (12:0) (lauric acid)`, `SM (d40:3)`)
+
+set.seed(1029)
+lasso_CL_test = glmnet(x = as.matrix(test_new_data_CL[2:8]),
+                       y = test_new_data_CL$PROT_ASD_2015,
+                       family = "binomial",
+                       alpha = 1,
+                       lambda = 0.02)
+
+rf_CL_test = 
 ```
 
