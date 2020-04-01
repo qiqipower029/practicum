@@ -732,13 +732,135 @@ test_new_data_CL =
   testset_CL %>% 
   select(PROT_ASD_2015, `TAG(59:2)`, `DG(34:3)`, `PC(40:7) A`, `TAG(54:3)`, `SM (d40:2) B`, `FA (12:0) (lauric acid)`, `SM (d40:3)`)
 
-set.seed(1029)
-lasso_CL_test = glmnet(x = as.matrix(test_new_data_CL[2:8]),
-                       y = test_new_data_CL$PROT_ASD_2015,
-                       family = "binomial",
-                       alpha = 1,
-                       lambda = 0.02)
+train_new_data_CL = 
+  trainset_CL %>% 
+  select(PROT_ASD_2015, `TAG(59:2)`, `DG(34:3)`, `PC(40:7) A`, `TAG(54:3)`, `SM (d40:2) B`, `FA (12:0) (lauric acid)`, `SM (d40:3)`)
 
-rf_CL_test = 
+# Caret
+# Lasso
+set.seed(1029)
+model.lasso_CL = train(x = train_new_data_CL[2:8],
+                       y = train_new_data_CL$PROT_ASD_2015,
+                       method = "glmnet",
+                       metric = "ROC",
+                       tuneGrid = expand.grid(alpha = 1,
+                                          lambda = exp(seq(-10,-1, length.out = 100))),
+                       family = "binomial",
+                       trControl = ctrl)
+
+plot(model.lasso_CL, xTrans = function(x) log(x))
+model.lasso_CL$bestTune
+
+# XGBoost
+set.seed(1029)
+model.xgboost_CL = train(PROT_ASD_2015~., 
+                         train_new_data_CL,
+                         method = "xgbTree",
+                         trControl = ctrl,
+                         tuneGrid = xgboost.grid,
+                         metric = "ROC",
+                         verbose = F,
+                         importance = "accuracy")
+plot(model.xgboost_CL)
+
+# Random Forest
+set.seed(1029)
+rf.grid = expand.grid(mtry = 1,
+                      splitrule = "gini",
+                      min.node.size = 1:5)
+model.rf_CL  = train(PROT_ASD_2015~., data = train_new_data_CL,
+                     method = "ranger",
+                     tuneGrid = rf.grid,
+                     metric = "ROC",
+                     trControl = ctrl)
+
+ggplot(model.rf_CL, highlight = T)
+model.rf_CL$bestTune
+
+# ROC plot and AUC calculation
+lasso_pred_CL = predict(model.lasso_CL, newdata = test_new_data_CL, type = "prob")[,2]
+rf_pred_CL = predict(model.rf_CL, newdata = test_new_data_CL, type = "prob")[,2]
+xgb_pred_CL = predict(model.xgboost_CL, newdata = test_new_data_CL, type = "prob")[,2]
+
+roc.lasso_CL = roc(test_new_data_CL$PROT_ASD_2015, lasso_pred_CL)
+roc.rf_CL = roc(test_new_data_CL$PROT_ASD_2015, rf_pred_CL)
+roc.xgb_CL = roc(test_new_data_CL$PROT_ASD_2015, xgb_pred_CL)
+
+auc_CL = c(roc.lasso_CL$auc[1], roc.rf_CL$auc[1], roc.xgb_CL$auc[1])
+
+plot(roc.lasso_CL, legacy.axes = T)
+plot(roc.rf_CL, col = 2, add = T)
+plot(roc.xgb_CL, col = 3, add = T)
+modelNames = c("LASSO", "Random Forest", "XGBoost")
+legend("bottomright", legend = paste0(modelNames, ": ", round(auc_CL, 3)), col = 1:3, lwd = 2)
+```
+
+```{r test performance BA}
+# CL data
+test_new_data_BA = 
+  testset_BA %>% 
+  select(PROT_ASD_2015, `TAG(59:2)`, `DG(34:3)`, `PC(40:7) A`, `TAG(54:3)`, `SM (d40:2) B`, `FA (12:0) (lauric acid)`, `SM (d40:3)`)
+
+train_new_data_CL = 
+  trainset_CL %>% 
+  select(PROT_ASD_2015, `TAG(59:2)`, `DG(34:3)`, `PC(40:7) A`, `TAG(54:3)`, `SM (d40:2) B`, `FA (12:0) (lauric acid)`, `SM (d40:3)`)
+
+# Caret
+# Lasso
+set.seed(1029)
+model.lasso_CL = train(x = train_new_data_CL[2:8],
+                       y = train_new_data_CL$PROT_ASD_2015,
+                       method = "glmnet",
+                       metric = "ROC",
+                       tuneGrid = expand.grid(alpha = 1,
+                       lambda = exp(seq(-10,-1, length.out = 100))),
+                       family = "binomial",
+                       trControl = ctrl)
+
+plot(model.lasso_CL, xTrans = function(x) log(x))
+model.lasso_CL$bestTune
+
+# XGBoost
+set.seed(1029)
+model.xgboost_CL = train(PROT_ASD_2015~., 
+                         train_new_data_CL,
+                         method = "xgbTree",
+                         trControl = ctrl,
+                         tuneGrid = xgboost.grid,
+                         metric = "ROC",
+                         verbose = F,
+                         importance = "accuracy")
+plot(model.xgboost_CL)
+
+# Random Forest
+set.seed(1029)
+rf.grid = expand.grid(mtry = 1,
+                      splitrule = "gini",
+                      min.node.size = 1:5)
+model.rf_CL  = train(PROT_ASD_2015~., data = train_new_data_CL,
+                     method = "ranger",
+                     tuneGrid = rf.grid,
+                     metric = "ROC",
+                     trControl = ctrl)
+
+ggplot(model.rf_CL, highlight = T)
+model.rf_CL$bestTune
+
+# ROC plot and AUC calculation
+lasso_pred_CL = predict(model.lasso_CL, newdata = test_new_data_CL, type = "prob")[,2]
+rf_pred_CL = predict(model.rf_CL, newdata = test_new_data_CL, type = "prob")[,2]
+xgb_pred_CL = predict(model.xgboost_CL, newdata = test_new_data_CL, type = "prob")[,2]
+
+roc.lasso_CL = roc(test_new_data_CL$PROT_ASD_2015, lasso_pred_CL)
+roc.rf_CL = roc(test_new_data_CL$PROT_ASD_2015, rf_pred_CL)
+roc.xgb_CL = roc(test_new_data_CL$PROT_ASD_2015, xgb_pred_CL)
+
+auc_CL = c(roc.lasso_CL$auc[1], roc.rf_CL$auc[1], roc.xgb_CL$auc[1])
+
+plot(roc.lasso_CL, legacy.axes = T)
+plot(roc.rf_CL, col = 2, add = T)
+plot(roc.xgb_CL, col = 3, add = T)
+modelNames = c("LASSO", "Random Forest", "XGBoost")
+legend("bottomright", legend = paste0(modelNames, ": ", round(auc_CL, 3)), col = 1:3, lwd = 2)
 ```
 
