@@ -796,7 +796,7 @@ legend("bottomright", legend = paste0(modelNames, ": ", round(auc_CL, 3)), col =
 ```
 
 ```{r test performance BA}
-# CL data
+# BA data
 test_new_data_BA = 
   testset_BA %>% 
   select(PROT_ASD_2015, `Retinoic acid`, Torasemide, CocamidoprpylBetaine, `11.alpha.-Hydroxyprogesterone .beta.-D-glucuronide`, `2-(N-Morpholino)ethanesulfonic acid`, Adenosine, Ropivacaine, `N-Methylvaline`, `Isovaleryl-L-carnitine`, `Glycodeoxycholic acid`, `(2R)-3-Hydroxyisovaleroylcarnitine`, `N-Acetylhistidine`, `Glycocholic acid`)
@@ -865,7 +865,7 @@ legend("bottomright", legend = paste0(modelNames, ": ", round(auc_BA, 3)), col =
 ```
 
 ```{r test performance PM}
-# CL data
+# PM data
 test_new_data_PM = 
   testset_PM %>% 
   select(PROT_ASD_2015, levoglucosan, `1-monostearin`, `oxamic acid`, lactose, uridine, `3,6-anhydro-D-galactose`, `N-acetylornithine`, `quinic acid`, `glutaric acid`, `1-hexadecanol`, `kynurenic acid`, `glucose-1-phosphate`)
@@ -934,7 +934,7 @@ legend("bottomright", legend = paste0(modelNames, ": ", round(auc_PM, 3)), col =
 ```
 
 ```{r test performance OL}
-# CL data
+# OL data
 test_new_data_OL = 
   testset_OL %>% 
   select(PROT_ASD_2015, `9-ketooctadeca-10,12-dienoic acid`, `15-Deoxy-delta-12,14-Prostaglandin J2`, `9(10)-epoxy-12,15-octadecadienoic acid`, `13-Hydroxyoctadecadienoic acid`, `6-Ketoprostaglandin F1 alpha`, `13-ketooctadeca-9,11-dienoic acid`, `Leukotriene B4`)
